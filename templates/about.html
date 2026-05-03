@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<header class="global-banner">
+  <div class="banner-left">
+    <img src="/static/pocketiq.png" alt="PocketIQ Logo" class="logo" />
+    <span class="brand-name">PocketIQ</span>
+  </div>
+
+  <nav class="banner-right">
+    <!-- Home page CTA -->
+    {% if request.path == "/" %}
+    <a href="/mobo/learning" class="banner-btn">Open MoBo</a>
+    {% else %}
+    <a href="/" class="banner-btn">Home</a>
+    {% endif %}
+
+    <a href="/about" class="banner-link">About Us</a>
+  </nav>
+</header>
+
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About • PocketIQ</title>
+
+  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="/static/ui.css" />
+
+  <style>
+    .about-container {
+      max-width: 900px;
+      margin: 80px auto;
+      padding: 0 20px;
+    }
+
+    .about-container h1 {
+      font-size: 2.4rem;
+      color: #2d248a;
+      margin-bottom: 16px;
+    }
+
+    .about-container h2 {
+      margin-top: 40px;
+      color: #2d248a;
+    }
+
+    .about-container p {
+      line-height: 1.7;
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .back-btn {
+      margin-top: 40px;
+      display: inline-block;
+      background: #2d248a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="about-container">
+    <h1>About PocketIQ</h1>
+
+    <p>
+      PocketIQ is an AI-powered financial literacy platform built to help teenagers
+      and young adults make smarter money decisions in the real world.
+    </p>
+
+    <p>
+      Traditional financial education is often abstract, jargon-heavy, or unrealistic
+      from everyday decisions. PocketIQ bridges this gap by combining interactive learning,
+      decision guidance, and visual comparisons in a versatile and accessible interface.
+    </p>
+
+    <h2>About Me</h2>
+
+    <p>
+      Hi! I’m Kalash, a highschool student passionate about making finance practical,
+      relatable, and engaging for young people. PocketIQ is my attempt to turn financial
+      literacy from theory into skills you can actually use throughout your financial journey.
+    </p>
+
+    <p>
+      This project combines AI, UX design, and real-world scenarios to help
+      users learn at their own pace and make confident financial choices.
+    </p>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+  <script>
+    const DEFAULT_MODE = "{{ mode }}";
+  </script>
+
+  <header class="global-banner">
+    <div class="banner-left">
+      <img src="/static/pocketiq.png" alt="PocketIQ Logo" class="logo" />
+      <span class="brand-name">PocketIQ</span>
+    </div>
+
+    <nav class="banner-right">
+      <!-- Home page CTA -->
+      {% if request.path == "/" %}
+      <a href="/mobo/learning" class="banner-btn">Open MoBo</a>
+      {% else %}
+      <a href="/" class="banner-btn">Home</a>
+      {% endif %}
+
+      <a href="/about" class="banner-link">About Us</a>
+    </nav>
+  </header>
+
+
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PocketIQ • MoBo</title>
+    <link rel="stylesheet" href="/static/layout.css" />
+    <link rel="stylesheet" href="/static/ui.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+      :root {
+        --brand: #2d248a;
+        --ink: #0b0b0b;
+        --muted: #5b5b5b;
+        --soft: #f4f3ff;
+        --success: #16c2a1;
+      }
+
+      body {
+        font-family: Inter, sans-serif;
+        background: #fdfdff;
+        color: var(--ink);
+        margin: 0;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid #ececf3;
+        padding: 16px 5%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+      }
+
+      .brand {
+        font-weight: 800;
+        color: var(--brand);
+        font-size: 1.7rem;
+      }
+
+      .btn {
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .mode-bar {
+        display: flex;
+        justify-content: center;
+        background: var(--soft);
+        padding: 12px;
+        border-bottom: 1px solid #ececf3;
+      }
+
+      .mode-select {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        font-weight: 600;
+      }
+
+      .mode-select input[type="radio"] {
+        accent-color: var(--brand);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 20px;
+      }
+
+      /* Learning Mode */
+      #learning {
+        display: none;
+        text-align: center;
+      }
+
+      .context-box {
+        margin: 40px auto;
+        max-width: 700px;
+        text-align: left;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+      }
+
+      .context-box h2 {
+        color: var(--brand);
+        margin-bottom: 12px;
+      }
+
+      .context-box textarea {
+        width: 100%;
+        height: 120px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        padding: 12px;
+        font-family: Inter, sans-serif;
+        font-size: 1rem;
+        resize: none;
+        outline: none;
+      }
+
+      .context-box button {
+        margin-top: 16px;
+      }
+
+      /* Roadmap + Assistant */
+      .roadmap-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 40px;
+        margin-top: 3rem;
+        padding: 0 5%;
+      }
+
+      .roadmap-wrapper {
+        flex: 1;
+        max-width: 70%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .roadmap-track {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 3rem 1rem;
+        gap: 60px;
+        position: relative;
+      }
+
+      .step {
+        background: #ffffff;
+        border: 2px solid #e3e2f5;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(45, 36, 138, 0.08);
+        padding: 20px 28px;
+        width: 240px;
+        text-align: left;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .step h4 {
+        color: #2d248a;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+      }
+
+      .step p {
+        color: #333;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      .step.completed {
+        background: #2d248a;
+        color: #fff;
+        border-color: #2d248a;
+      }
+
+      .step.locked {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: grayscale(0.4);
+      }
+
+      .step:not(.locked):hover {
+        transform: translateY(-6px);
+        box-shadow: 0 6px 18px rgba(45, 36, 138, 0.2);
+      }
+
+      .connector {
+        position: relative;
+        width: 120px;
+        height: 40px;
+        margin-top: 30px;
+      }
+
+      .connector svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 120px;
+        height: 40px;
+      }
+
+      .connector path {
+        fill: none;
+        stroke: #d1cef7;
+        stroke-width: 3px;
+        stroke-linecap: round;
+        transition: stroke 0.3s ease;
+      }
+
+      .connector.completed path {
+        stroke: #2d248a;
+      }
+
+      /* MoBo Assistant */
+      .mobo-assistant {
+        width: 300px;
+        min-height: 500px;
+        background: #2d248a;
+        color: white;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      }
+
+      .mobo-assistant h3 {
+        margin: 0 0 12px;
+        font-size: 1.3rem;
+      }
+
+      .mobo-chat {
+        flex: 1;
+        background: #3a3099;
+        border-radius: 10px;
+        padding: 12px;
+        overflow-y: auto;
+        margin-bottom: 12px;
+      }
+
+      .mobo-chat p {
+        font-size: 0.9rem;
+        margin: 6px 0;
+        line-height: 1.4;
+      }
+
+      .mobo-input {
+        display: flex;
+        gap: 8px;
+      }
+
+      .mobo-input input {
+        flex: 1;
+        border: none;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 0.9rem;
+      }
+
+      .mobo-input button {
+        background: #fff;
+        color: #2d248a;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+
+      .mobo-input button:hover {
+        background: #ddd;
+      }
+
+      /* Decision Mode */
+      #decision {
+        display: none;
+      }
+
+      .chat-log {
+        background: #fafaff;
+        border: 1px solid #e8e8f8;
+        border-radius: 14px;
+        padding: 20px;
+        height: 400px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .user-msg {
+        background: var(--brand);
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 14px;
+        align-self: flex-end;
+      }
+
+      .bot-msg {
+        background: #ebe8ff;
+        color: #000;
+        padding: 10px 14px;
+        border-radius: 14px;
+        align-self: flex-start;
+      }
+
+      .chat-form {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+        justify-content: center;
+      }
+
+      .chat-form input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 999px;
+        border: 1px solid #d9d6f5;
+      }
+
+      .chat-form button {
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 22px;
+      }
+
+      /* Compare Mode */
+      #compare {
+        display: none;
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .compare-grid {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .compare-box {
+        flex: 1 1 45%;
+        text-align: center;
+      }
+
+      .compare-box input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+      }
+
+      .dark-box {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: #1b1441;
+        border: 2px solid black;
+        border-radius: 10px;
+      }
+
+      #compare-output {
+        text-align: center;
+        font-weight: 600;
+        color: #000;
+        margin-top: 16px;
+      }
+
+      .roadmap-track::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .roadmap-track::-webkit-scrollbar-thumb {
+        background: #2d248a;
+        border-radius: 10px;
+      }
+
+      .roadmap-track::-webkit-scrollbar-track {
+        background: #eee;
+      }
+    </style>
+  </head>
+
+
+  <div class="mode-bar">
+    <div class="mode-tabs">
+      <a href="/mobo/learning" data-mode="learning">Learning</a>
+      <a href="/mobo/decision" data-mode="decision">Decision</a>
+      <a href="/mobo/compare" data-mode="compare">Compare</a>
+    </div>
+
+  </div>
+
+
+  <main class="container">
+    <!-- Learning Mode -->
+    <section id="learning">
+      <div class="context-box">
+        <h2>Tell MoBo about your financial background:</h2>
+        <p>Describe your current understanding of money, saving, budgeting, or investing
+          — (e.g. “I save a bit each month but don’t know how to invest yet.”)</p>
+        <textarea id="user-context"
+          placeholder="Write a few lines about your financial background or what you'd like to learn about...                      The more detail you give me, the better I can help you!"></textarea>
+        <button id="generate-roadmap" class="btn">Generate Personalized Roadmap</button>
+      </div>
+
+      <section id="roadmap" style="display:none;">
+        <h2>Your Personalized Learning Roadmap</h2>
+        <div class="roadmap-container-fixed">
+          <div class="roadmap-scroll">
+            <div id="track" class="roadmap-track"></div>
+          </div>
+
+          <!-- MoBo Assistant -->
+          <aside class="mobo-assistant-fixed">
+            <h3>MoBo Assistant</h3>
+            <div id="mobo-chat" class="mobo-chat">
+              <p><strong>MoBo:</strong> Hey there! Need help understanding something? Ask me anything!</p>
+            </div>
+            <div class="mobo-input">
+              <input type="text" id="mobo-input" placeholder="Ask about your roadmap..." />
+              <button id="mobo-send">Send</button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Article Viewer -->
+        <div id="article"
+          style="display:none; background:#fff; padding:24px; border-radius:16px; margin-top:30px; box-shadow:0 4px 16px rgba(0,0,0,0.08); text-align:left;">
+          <h2 id="article-title" style="color:#2d248a;"></h2>
+          <div id="article-body" style="line-height:1.6; color:#111; font-size:1rem;"></div>
+          <button id="back-to-roadmap" class="btn" style="margin-top:20px;">← Back to Roadmap</button>
+        </div>
+      </section>
+
+
+
+
+    </section>
+
+    <!-- Decision Mode -->
+    <section id="decision">
+
+      <!-- Decision Mode Header -->
+      <div class="mode-header">
+        <h2> MoBo Decision Bot</h2>
+        <p>
+          Tell MoBo what you’re thinking of buying.
+          It’ll ask follow-up questions and help you decide whether it’s worth saving up, thinking again, or making the
+          purchase.
+        </p>
+      </div>
+
+      <!-- Chat Area -->
+      <div id="chat-log" class="chat-log"></div>
+
+      <form id="chat-form" class="chat-form">
+        <input id="user-input" placeholder="e.g. Should I buy wireless earbuds for ₹3,000?" />
+        <button type="submit">Send</button>
+      </form>
+
+    </section>
+
+
+    <!-- Compare Mode -->
+    <section id="compare">
+      <div class="compare-grid">
+        <div class="compare-box">
+          <input id="item1" placeholder="Enter item you want to buy..." />
+          <div class="dark-box">
+            <img id="img1" class="overlay-img" alt="Item image" />
+          </div>
+          <p>What are you trying to buy?<br>(Be as specific as you can!)</p>
+        </div>
+        <div class="compare-box">
+          <input id="item2" placeholder="Enter item to compare it with..." />
+          <div class="dark-box">
+            <img id="img2" class="overlay-img" alt="Item image" />
+          </div>
+          <p>What would you like to compare it with?<br>(Be as specific as you can!)</p>
+        </div>
+      </div>
+      <button id="compare-btn" class="btn">Compare</button>
+      <div id="compare-output"></div>
+    </section>
+  </main>
+
+  <script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const sections = {
+        learning: document.getElementById("learning"),
+        decision: document.getElementById("decision"),
+        compare: document.getElementById("compare")
+      };
+      const tabs = document.querySelectorAll(".mode-tab");
+
+      const showMode = (mode) => {
+        Object.entries(sections).forEach(([key, section]) => {
+          section.style.display = key === mode ? "block" : "none";
+        });
+
+        tabs.forEach(tab => {
+          tab.classList.toggle("active", tab.dataset.mode === mode);
+        });
+      };
+
+      // Tab click handling
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          showMode(tab.dataset.mode);
+        });
+      });
+
+      // Default mode
+      const initialMode = DEFAULT_MODE || "learning";
+      showMode(initialMode);
+
+      // Optional: visually activate the tab
+      document.querySelector(`[data-mode="${initialMode}"]`)?.classList.add("active");
+
+
+
+      // Decision Chat
+      const chatForm = document.getElementById("chat-form");
+      const chatLog = document.getElementById("chat-log");
+      const chatInput = document.getElementById("user-input");
+      chatForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+        const user = document.createElement("div");
+        user.className = "user-msg";
+        user.textContent = msg;
+        chatLog.appendChild(user);
+        chatInput.value = "";
+        const bot = document.createElement("div");
+        bot.className = "bot-msg";
+        bot.textContent = "Thinking...";
+        chatLog.appendChild(bot);
+        try {
+          const r = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ message: msg })
+          });
+          const d = await r.json();
+          bot.innerHTML = marked.parse(d.response || "(No reply)");
+        } catch {
+          bot.textContent = "Error contacting model.";
+        }
+      });
+
+      // Compare Mode
+
+      document.getElementById("compare-btn").addEventListener("click", async () => {
+        const i1 = document.getElementById("item1").value.trim();
+        const i2 = document.getElementById("item2").value.trim();
+
+        const img1 = document.getElementById("img1");
+        const img2 = document.getElementById("img2");
+        const out = document.getElementById("compare-output");
+
+        if (!i1 || !i2) {
+          out.textContent = "Please enter both items.";
+          return;
+        }
+
+        out.textContent = "Fetching products... (wait a few seconds)";
+
+        try {
+          const r = await fetch("/compare_items", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ item1: i1, item2: i2 })
+          });
+
+          const d = await r.json();
+          console.log("DEBUG:", d); // helpful
+
+          if (d.error) {
+            out.textContent = d.error;
+            return;
+          }
+
+          function setImage(imgElement, url, query) {
+            if (url && url.startsWith("http")) {
+              imgElement.src = url;
+            } else {
+              imgElement.src = `https://source.unsplash.com/400x300/?${query}`;
+            }
+          }
+
+          setImage(img1, d.item1.image, i1);
+          setImage(img2, d.item2.image, i2);
+
+          // ✅ CORE FEATURE (always shows)
+          let ratioText = "";
+          if (d.ratio && d.ratio > 0) {
+            ratioText = `⚖️ You can buy <strong>${d.ratio}</strong> of <strong>${i2}</strong> for the price of one <strong>${i1}</strong>.`;
+          } else {
+            ratioText = "⚠️ Couldn't compute comparison.";
+          }
+
+          out.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <strong>${d.item1.title}</strong><br>
+        💰 ${d.item1.price}
+        ${d.price1_inr ? `(≈ ₹${Math.round(d.price1_inr).toLocaleString()})` : ""}
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>${d.item2.title}</strong><br>
+        💰 ${d.item2.price}
+        ${d.price2_inr ? `(≈ ₹${Math.round(d.price2_inr).toLocaleString()})` : ""}
+      </div>
+
+      <div style="margin-top:16px; font-size:1.1rem;">
+        ${ratioText}
+      </div>
+    `;
+
+        } catch (err) {
+          console.error(err);
+          out.textContent = "Error fetching comparison.";
+        }
+      });
+
+      // Learning Mode
+      const contextBox = document.getElementById("user-context");
+      const genBtn = document.getElementById("generate-roadmap");
+      const road = document.getElementById("roadmap");
+      const track = document.getElementById("track");
+
+      genBtn.addEventListener("click", async () => {
+        const context = contextBox.value.trim();
+        localStorage.setItem("user_context", context);
+        if (!context) return alert("Please describe your financial background first!");
+        genBtn.disabled = true;
+        genBtn.textContent = "Generating roadmap...";
+
+        try {
+          const context = localStorage.getItem("user_context") || "";
+          const res = await fetch("/generate_roadmap", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              context: context
+            })
+          });
+
+          // 🧠 Parse JSON safely
+          const data = await res.json();
+          let roadmap = data.roadmap;
+
+          // Fix if backend sent a string instead of array
+          if (typeof roadmap === "string") {
+            try {
+              roadmap = JSON.parse(roadmap);
+            } catch {
+              roadmap = [];
+            }
+          }
+
+          if (!Array.isArray(roadmap) || roadmap.length === 0) {
+            roadmap = [
+              { title: "Budgeting Basics", summary: "Learn how to plan and track where your money goes each month." },
+              { title: "Saving Goals", summary: "Understand how to set achievable short- and long-term financial goals." },
+              { title: "Smart Spending", summary: "Recognize needs vs wants and develop mindful spending habits." },
+              { title: "Intro to Investing", summary: "Discover the power of compounding and basic investment concepts." },
+              { title: "Credit & Taxes", summary: "Learn how credit works and why taxes are an essential life skill." },
+            ];
+          }
+
+          // ✅ Save roadmap locally
+          localStorage.setItem("pqi_roadmap", JSON.stringify(roadmap));
+          localStorage.setItem("pqi_progress", "0");
+
+          renderRoadmap(roadmap);
+          road.scrollIntoView({ behavior: "smooth" });
+        } catch (e) {
+          console.error("❌ Roadmap generation error:", e);
+          alert("Error generating roadmap. Try again later.");
+        } finally {
+          genBtn.disabled = false;
+          genBtn.textContent = "Generate Personalized Roadmap";
+        }
+      });
+
+
+      function renderRoadmap(items) {
+        road.style.display = "block";
+        track.innerHTML = "";
+
+        // Make roadmap horizontally centered and neat
+        track.style.display = "flex";
+        track.style.justifyContent = "center";
+        track.style.alignItems = "center";
+        track.style.gap = "60px";
+        track.style.overflowX = "auto";
+        track.style.scrollBehavior = "smooth";
+        track.style.padding = "2rem 0";
+        track.style.whiteSpace = "nowrap";
+
+        const progress = Number(localStorage.getItem("pqi_progress") || "0");
+
+        items.forEach((it, i) => {
+          const step = document.createElement("div");
+          step.className = "step";
+          if (i < progress) step.classList.add("completed");
+          if (i > progress) step.classList.add("locked");
+
+          step.innerHTML = `
+      <h4>${i + 1}. ${it.title}</h4>
+      <p>${it.summary}</p>
+    `;
+
+          if (i === progress || i < progress) {
+            step.addEventListener("click", () => openArticle(i, it.title));
+          }
+
+          track.appendChild(step);
+
+
+
+          if (i < items.length - 1) {
+            const connector = document.createElement("div");
+            connector.className = "connector";
+
+            const progress = Number(localStorage.getItem("pqi_progress") || "0");
+            let arrowColor = "#cfcfcf"; // locked
+            if (i < progress) arrowColor = "#16c2a1"; // completed
+            if (i === progress) arrowColor = "#2d248a"; // current
+
+
+            connector.innerHTML = `
+  <svg width="90" height="30" viewBox="0 0 90 30">
+    <polygon 
+      points="0,12 60,12 60,6 90,15 60,24 60,18 0,18"
+      fill="${arrowColor}"
+    />
+  </svg>
+`;
+
+
+
+
+            track.appendChild(connector);
+          }
+        });
+
+        // Always show scroll bar
+        track.style.overflowX = "scroll";
+        track.style.scrollbarWidth = "thin";
+        track.style.scrollbarColor = "#2d248a #eee";
+      }
+
+      // --- Inline article rendering with proper parsing ---
+      async function openArticle(i, title) {
+        const progress = Number(localStorage.getItem("pqi_progress") || "0");
+        const items = JSON.parse(localStorage.getItem("pqi_roadmap") || "[]");
+
+        let articleBox = document.getElementById("article-box");
+        if (!articleBox) {
+          articleBox = document.createElement("div");
+          articleBox.id = "article-box";
+          articleBox.style.background = "#fff";
+          articleBox.style.border = "1px solid #ddd";
+          articleBox.style.borderRadius = "16px";
+          articleBox.style.padding = "24px";
+          articleBox.style.margin = "40px auto";
+          articleBox.style.maxWidth = "800px";
+          articleBox.style.boxShadow = "0 6px 18px rgba(0,0,0,0.1)";
+          articleBox.style.textAlign = "left";
+          articleBox.style.lineHeight = "1.6";
+          articleBox.style.transition = "opacity 0.3s ease-in-out";
+          road.parentNode.insertBefore(articleBox, road.nextSibling);
+        }
+
+        articleBox.innerHTML = `<h3 style="color:#2d248a;">${title}</h3><p>Loading...</p>`;
+
+        try {
+          const res = await fetch("/generate_article", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ topic: title })
+          });
+
+          const data = await res.json();
+
+          // Handle malformed or missing response
+          if (!data || !data.article) {
+            throw new Error("Invalid response from server");
+          }
+
+          const parsedArticle = marked.parse(data.article);
+          articleBox.innerHTML = `
+      <h3 style="color:#2d248a;">${title}</h3>
+      <div>${parsedArticle}</div>
+      <button id="close-article" class="btn" style="margin-top:20px;">Close</button>
+    `;
+
+          document.getElementById("close-article").onclick = () => {
+            articleBox.remove();
+          };
+
+          // Unlock next step after reading
+          if (i === progress) {
+            localStorage.setItem("pqi_progress", String(progress + 1));
+            renderRoadmap(items);
+          }
+        } catch (e) {
+          console.error("Article load error:", e);
+          articleBox.innerHTML = `<p style="color:red;">⚠️ Could not load article. Try again later.</p>`;
+        }
+      }
+
+
+      // --- MoBo Assistant Chat (Refined Markdown + Scrollable + Error-handled) ---
+      const moboChat = document.getElementById("mobo-chat");
+      const moboInput = document.getElementById("mobo-input");
+      const moboSend = document.getElementById("mobo-send");
+
+      moboSend.addEventListener("click", async () => {
+        const msg = moboInput.value.trim();
+        if (!msg) return;
+
+        // Display user message
+        moboChat.innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+        moboInput.value = "";
+        moboChat.scrollTop = moboChat.scrollHeight;
+
+        // Display typing indicator
+        const loader = document.createElement("p");
+        loader.textContent = "MoBo is thinking...";
+        loader.style.opacity = "0.7";
+        moboChat.appendChild(loader);
+        moboChat.scrollTop = moboChat.scrollHeight;
+
+        try {
+          const res = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ message: msg })
+          });
+
+          const data = await res.json();
+          loader.remove();
+
+          const reply = marked.parse(data.response || "⚠️ No response from MoBo.");
+          moboChat.innerHTML += `<p><strong>MoBo:</strong> ${reply}</p>`;
+        } catch (e) {
+          console.error("MoBo Assistant Error:", e);
+          loader.remove();
+          moboChat.innerHTML += `<p><strong>MoBo:</strong> ⚠️ Error contacting model. Try again later.</p>`;
+        }
+
+        moboChat.scrollTop = moboChat.scrollHeight;
+      });
+    });
+
+    // --- Article Generation + Display ---
+    // --- Article Generation + Display (with progress tracking) ---
+    async function openArticle(i, title) {
+      const roadmapSection = document.querySelector(".roadmap-scroll");
+      const article = document.getElementById("article");
+      const articleTitle = document.getElementById("article-title");
+      const articleBody = document.getElementById("article-body");
+
+      // Hide roadmap, show article
+      roadmapSection.style.display = "none";
+      article.style.display = "block";
+      articleTitle.textContent = title;
+      articleBody.textContent = "Loading article...";
+
+      try {
+        const res = await fetch("/generate_article", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ topic: title })
+        });
+        const data = await res.json();
+        articleBody.innerHTML = marked.parse(data.article || "No article found.");
+      } catch {
+        articleBody.textContent = "Error loading article. Try again later.";
+      }
+
+      // Progress unlock logic
+      let progress = Number(localStorage.getItem("pqi_progress") || "0");
+      const roadmap = JSON.parse(localStorage.getItem("pqi_roadmap") || "[]");
+
+      // If user is at current step, unlock next
+      if (i === progress && i < roadmap.length - 1) {
+        progress += 1;
+        localStorage.setItem("pqi_progress", String(progress));
+      }
+
+      // Always re-render roadmap to apply unlocks
+      document.getElementById("back-to-roadmap").onclick = () => {
+        article.style.display = "none";
+        roadmapSection.style.display = "block";
+        renderRoadmap(roadmap);
+      };
+    }
+
+  </script>
+</body>
+
+</html>

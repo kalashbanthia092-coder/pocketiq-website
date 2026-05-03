@@ -1,0 +1,88 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketIQ</title>
+  <link rel="stylesheet" href="static/layout.css" />
+  <link rel="stylesheet" href="static/ui.css" />
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">PocketIQ</div>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="/start">Start Learning</a></li>
+          <li><a href="/mobo">MoBo</a></li>
+          <li><a href="/goals">Set Goals</a></li>
+          <li><a href="/compare">Compare</a></li>
+        </ul>
+      </nav>
+      <div class="auth">
+        <a href="#signin" aria-label="Sign in">Sign in</a>
+        <a class="btn" href="#signup" aria-label="Sign up">Sign up</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Chatbot Section -->
+    <section class="chat-container">
+      <div class="chat-card">
+        <div id="chat-log" class="chat-log"></div>
+        <form id="chat-form" class="chat-form">
+          <input type="text" id="user-input" placeholder="Type your message..." required />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('chat-form');
+    const chatLog = document.getElementById('chat-log');
+    const input = document.getElementById('user-input');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      appendMessage('user-msg', userMessage);
+      input.value = '';
+
+      try {
+        appendMessage('bot-msg', 'Thinking...');
+        const botResponse = await getBotResponse(userMessage);
+        chatLog.lastChild.textContent = botResponse;
+      } catch (err) {
+        chatLog.lastChild.textContent = 'Error fetching response.';
+      }
+    });
+
+    function appendMessage(className, text) {
+      const msg = document.createElement('div');
+      msg.className = className;
+      msg.textContent = text;
+      chatLog.appendChild(msg);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    async function getBotResponse(message) {
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ message })
+        });
+        const data = await response.json();
+        return data.response ?? '(No reply)';
+      } catch (error) {
+        addMessage("(Error connecting to server)", "bot-message");
+      }
+    }
+  </script>
+</body>
+</html>
