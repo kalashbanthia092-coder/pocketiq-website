@@ -1,35 +1,41 @@
-ARTICLE_CACHE = {}
-from flask import Flask, render_template, request, jsonify, session
-from flask_session import Session
-from openai import OpenAI
-import re, requests, json, time
-import base64
-import time
-from serpapi import GoogleSearch
-import os 
+import json
+import os
+import re
+
 from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request, session
+from openai import OpenAI
+from serpapi import GoogleSearch
+
 load_dotenv()
 
-# ------------------- FLASK CONFIG -------------------
+ARTICLE_CACHE = {}
+CACHE = {}
+MAX_CHAT_HISTORY_MESSAGES = 12
 
-app = Flask(__name__)
 
-# Set a unique and secure secret key
-app.secret_key = "kalash_secret_2025"  # You can make this anything random
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-me")
+    return app
 
-# Configure session storage
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_PERMANENT"] = False
-Session(app)
+
+app = create_app()
 
 # ------------------- OPENAI CLIENT -------------------
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_KEY")
-)
+def get_openai_client():
+    api_key = os.getenv("OPENAI_API_KEY") or os.getenv("OPENAI_KEY")
+    if not api_key:
+        raise RuntimeError("Missing OPENAI_API_KEY")
+    return OpenAI(api_key=api_key)
 
-# ✅ Add this line here
-CACHE = {}
+
+def get_serpapi_key():
+    api_key = os.getenv("SERPAPI_API_KEY")
+    if not api_key:
+        raise RuntimeError("Missing SERPAPI_API_KEY")
+    return api_key
 
 # ------------------- ROUTES -------------------
 
@@ -101,6 +107,7 @@ def ask():
     chat_history.append({"role": "user", "content": message})
 
     try:
+        client = get_openai_client()
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=chat_history,
@@ -110,6 +117,8 @@ def ask():
 
         # Append bot response to memory
         chat_history.append({"role": "assistant", "content": reply})
+        if len(chat_history) > MAX_CHAT_HISTORY_MESSAGES:
+            chat_history = [chat_history[0]] + chat_history[-(MAX_CHAT_HISTORY_MESSAGES - 1):]
         session['chat_history'] = chat_history
 
         return jsonify({'response': reply})
@@ -141,6 +150,7 @@ def generate_roadmap():
     )
 
     try:
+        client = get_openai_client()
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
@@ -203,6 +213,7 @@ def generate_article():
     )
 
     try:
+        client = get_openai_client()
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
@@ -244,14 +255,11 @@ Start small, stay consistent, and build habits over time.
 
 # ------------------- COMPARE MODE -------------------
 
-from serpapi import GoogleSearch
-from flask import request, jsonify
-
 def get_product_data(query):
     params = {
         "engine": "google_shopping",
         "q": query,
-        "api_key": "9ba579e3d12226ef29a74335279b2e5125e50224f1fe1ad30b67e4ed8f83d24a"
+        "api_key": get_serpapi_key(),
     }
 
     search = GoogleSearch(params)
@@ -330,8 +338,9 @@ def compare_items():
         return jsonify({'error': f"⚠️ Server error: {str(e)}"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    port = int(os.getenv("PORT", "5000"))
+    debug = os.getenv("FLASK_DEBUG", "").lower() == "true"
+    app.run(host="0.0.0.0", port=port, debug=debug)
 
 
 
