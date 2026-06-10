@@ -12,13 +12,16 @@ load_dotenv()
 ARTICLE_CACHE = {}
 CACHE = {}
 MAX_CHAT_HISTORY_MESSAGES = 12
+DECISION_FALLBACK_RESPONSE = (
+    "I can still help you think this through. Share the item, its price, how often you'll use it, "
+    "and whether it replaces something you already own, and I'll help you decide if it's worth it."
+)
 
 
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-me")
     return app
-
 
 app = create_app()
 
@@ -36,6 +39,31 @@ def get_serpapi_key():
     if not api_key:
         raise RuntimeError("Missing SERPAPI_API_KEY")
     return api_key
+
+
+def build_compare_fallback(item1, item2):
+    return {
+        "item1": {
+            "title": item1,
+            "price": None,
+            "image": None,
+            "link": None,
+        },
+        "item2": {
+            "title": item2,
+            "price": None,
+            "image": None,
+            "link": None,
+        },
+        "price1_inr": None,
+        "price2_inr": None,
+        "ratio": 0,
+        "note": "Live price comparison is unavailable right now. Add SERPAPI_API_KEY to re-enable shopping data.",
+    }
+
+
+def build_article_cache_key(topic, context, step_summary):
+    return "||".join([topic.strip(), context.strip(), step_summary.strip()])
 
 # ------------------- ROUTES -------------------
 
@@ -87,7 +115,7 @@ def ask():
 "   - how often it will be used,\n"
 "   - whether this replaces or duplicates something they already own,\n"
 "   - and any financial constraints they mention.\n"
-"2. Ask as many questions as necessary UNTIL you have enough information to make a confident judgment.\n"
+"2. Ask as MANY questions as necessary UNTIL you have enough information to make a confident judgment.\n"
 "3. Once you have enough information, STOP asking questions and give a FINAL evaluation that includes:\n"
 "   - whether the purchase seems thoughtful or impulsive,\n"
 "   - what else the money could realistically be used for or saved toward,\n"
@@ -96,7 +124,7 @@ def ask():
 "5. After giving the final evaluation, DO NOT ask further questions.\n\n"
 
 "Tone: friendly, practical, and non-judgmental — like a financially wise older friend. "
-"Use relatable examples in I NR (₹), such as snacks, subscriptions, phone recharges, or travel.\n"
+"Use relatable examples in INR (₹), such as snacks, subscriptions, phone recharges, or travel.\n"
 "Stay strictly focused on purchase decisions only."
 }
 
@@ -125,7 +153,7 @@ def ask():
 
     except Exception as e:
         print("Ask Error:", e)
-        return jsonify({'response': f"⚠️ Error contacting model: {str(e)}"})
+        return jsonify({'response': DECISION_FALLBACK_RESPONSE})
 
     
 
@@ -195,20 +223,34 @@ def generate_roadmap():
 @app.route('/generate_article', methods=['POST'])
 def generate_article():
     topic = request.form.get('topic', '').strip()
+    context = request.form.get('context', '').strip()
+    step_summary = request.form.get('summary', '').strip()
+    cache_key = build_article_cache_key(topic, context, step_summary)
 
-    if topic in ARTICLE_CACHE:
-        return jsonify({'article': ARTICLE_CACHE[topic]})
+    if cache_key in ARTICLE_CACHE:
+        return jsonify({'article': ARTICLE_CACHE[cache_key]})
 
     if not topic:
         return jsonify({'article': "⚠️ No topic provided."})
 
+    context_block = ""
+    if context:
+        context_block += f"Original learner goal/context: {context}\n"
+    if step_summary:
+        context_block += f"Roadmap step summary: {step_summary}\n"
+
     prompt = (
         f"You are MoBo, a financial mentor for Indian teenagers.\n\n"
-        f"Explain the topic: '{topic}' in about 200–250 words.\n"
+        f"{context_block}\n"
+        f"Explain the roadmap step: '{topic}' in about 200–250 words.\n"
+        "Keep the explanation tightly aligned with the learner's original goal and this roadmap step.\n"
+        "If the learner mentioned a country, market, product type, or objective, explicitly include it in the explanation.\n"
+        "Do not drift into generic advice that ignores the learner context.\n"
         "DO NOT include the title in the response.\n"
         "Start directly with the explanation.\n"
         "Use simple language and real-life examples (pocket money, savings, UPI, etc).\n"
         "Use INR (₹) for all examples, unless otherwise specified.\n"
+        "Give PRACTICAL tips and ACTIONABLE advice related to the topic.\n"
         "End with 2–3 key takeaways."
     )
 
@@ -227,7 +269,7 @@ def generate_article():
             else None
         )
 
-        ARTICLE_CACHE[topic] = article
+        ARTICLE_CACHE[cache_key] = article
 
         if not article:
             raise ValueError("Empty response")
@@ -335,21 +377,9 @@ def compare_items():
 
     except Exception as e:
         print("❌ Compare error:", e)
-        return jsonify({'error': f"⚠️ Server error: {str(e)}"})
+        return jsonify(build_compare_fallback(item1, item2))
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", "5000"))
     debug = os.getenv("FLASK_DEBUG", "").lower() == "true"
     app.run(host="0.0.0.0", port=port, debug=debug)
-
-
-
-
-
-
-
-
-
-
-
-

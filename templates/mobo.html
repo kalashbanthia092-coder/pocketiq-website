@@ -748,7 +748,7 @@
     `;
 
           if (i === progress || i < progress) {
-            step.addEventListener("click", () => openArticle(i, it.title));
+            step.addEventListener("click", () => openArticle(i, it));
           }
 
           track.appendChild(step);
@@ -788,9 +788,12 @@
       }
 
       // --- Inline article rendering with proper parsing ---
-      async function openArticle(i, title) {
+      async function openArticle(i, item) {
         const progress = Number(localStorage.getItem("pqi_progress") || "0");
         const items = JSON.parse(localStorage.getItem("pqi_roadmap") || "[]");
+        const userContext = localStorage.getItem("user_context") || "";
+        const title = item.title;
+        const summary = item.summary || "";
 
         let articleBox = document.getElementById("article-box");
         if (!articleBox) {
@@ -815,7 +818,11 @@
           const res = await fetch("/generate_article", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ topic: title })
+            body: new URLSearchParams({
+              topic: title,
+              context: userContext,
+              summary: summary
+            })
           });
 
           const data = await res.json();
@@ -890,50 +897,6 @@
         moboChat.scrollTop = moboChat.scrollHeight;
       });
     });
-
-    // --- Article Generation + Display ---
-    // --- Article Generation + Display (with progress tracking) ---
-    async function openArticle(i, title) {
-      const roadmapSection = document.querySelector(".roadmap-scroll");
-      const article = document.getElementById("article");
-      const articleTitle = document.getElementById("article-title");
-      const articleBody = document.getElementById("article-body");
-
-      // Hide roadmap, show article
-      roadmapSection.style.display = "none";
-      article.style.display = "block";
-      articleTitle.textContent = title;
-      articleBody.textContent = "Loading article...";
-
-      try {
-        const res = await fetch("/generate_article", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ topic: title })
-        });
-        const data = await res.json();
-        articleBody.innerHTML = marked.parse(data.article || "No article found.");
-      } catch {
-        articleBody.textContent = "Error loading article. Try again later.";
-      }
-
-      // Progress unlock logic
-      let progress = Number(localStorage.getItem("pqi_progress") || "0");
-      const roadmap = JSON.parse(localStorage.getItem("pqi_roadmap") || "[]");
-
-      // If user is at current step, unlock next
-      if (i === progress && i < roadmap.length - 1) {
-        progress += 1;
-        localStorage.setItem("pqi_progress", String(progress));
-      }
-
-      // Always re-render roadmap to apply unlocks
-      document.getElementById("back-to-roadmap").onclick = () => {
-        article.style.display = "none";
-        roadmapSection.style.display = "block";
-        renderRoadmap(roadmap);
-      };
-    }
 
   </script>
 </body>
