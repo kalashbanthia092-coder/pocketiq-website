@@ -1,98 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
-<header class="global-banner">
-  <div class="banner-left">
-    <img src="/static/pocketiq.png" alt="PocketIQ Logo" class="logo" />
-    <span class="brand-name">PocketIQ</span>
-  </div>
-
-  <nav class="banner-right">
-    <!-- Home page CTA -->
-    {% if request.path == "/" %}
-    <a href="/mobo/learning" class="banner-btn">Open MoBo</a>
-    {% else %}
-    <a href="/" class="banner-btn">Home</a>
-    {% endif %}
-
-    <a href="/about" class="banner-link">About Us</a>
-  </nav>
-</header>
-
 
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>About • PocketIQ</title>
-
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/static/ui.css" />
-
-  <style>
-    .about-container {
-      max-width: 900px;
-      margin: 80px auto;
-      padding: 0 20px;
-    }
-
-    .about-container h1 {
-      font-size: 2.4rem;
-      color: #2d248a;
-      margin-bottom: 16px;
-    }
-
-    .about-container h2 {
-      margin-top: 40px;
-      color: #2d248a;
-    }
-
-    .about-container p {
-      line-height: 1.7;
-      font-size: 1rem;
-      color: #333;
-      margin-bottom: 16px;
-    }
-
-    .back-btn {
-      margin-top: 40px;
-      display: inline-block;
-      background: #2d248a;
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 999px;
-      text-decoration: none;
-      font-weight: 600;
-    }
-  </style>
 </head>
 
 <body>
-  <main class="about-container">
-    <h1>About PocketIQ</h1>
+  {% include "partials/header.html" %}
 
-    <p>
-      PocketIQ is an AI-powered financial literacy platform built to help teenagers
-      and young adults make smarter money decisions in the real world.
-    </p>
+  <main>
+    <!-- HERO -->
+    <section class="pq-wrap about-hero">
+      <div>
+        <span class="eyebrow">About</span>
+        <h1>I got tired of money advice written for adults</h1>
+        <p class="lede">
+          Everything I found about saving or investing assumed you had a salary, a credit score
+          and a tax bracket. I had pocket money and a lot of questions. PocketIQ is what I wish
+          I'd had instead.
+        </p>
+        <div class="hp-cta">
+          <a href="/mobo/learning" class="pq-btn lg">Try it yourself →</a>
+        </div>
+      </div>
 
-    <p>
-      Traditional financial education is often abstract, jargon-heavy, or unrealistic
-      from everyday decisions. PocketIQ bridges this gap by combining interactive learning,
-      decision guidance, and visual comparisons in a versatile and accessible interface.
-    </p>
+      <div class="about-card">
+        <span class="quote-mark">"</span>
+        <p>
+          If a fifteen-year-old can't follow your explanation of compound interest, the problem
+          isn't the fifteen-year-old.
+        </p>
+        <div class="about-sign">
+          <div class="sign-avatar">K</div>
+          <div>
+            <strong>Kalash</strong>
+            <span>High school student, built PocketIQ</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <h2>About Me</h2>
+    <!-- STATS -->
+    <section class="pq-wrap">
+      <div class="stat-band">
+        <div><strong>3</strong><span>AI modes</span></div>
+        <div><strong>1</strong><span>Person building it</span></div>
+        <div><strong>₹0</strong><span>Cost to users</span></div>
+        <div><strong>0</strong><span>Ads or trackers</span></div>
+      </div>
+    </section>
 
-    <p>
-      Hi! I’m Kalash, a highschool student passionate about making finance practical,
-      relatable, and engaging for young people. PocketIQ is my attempt to turn financial
-      literacy from theory into skills you can actually use throughout your financial journey.
-    </p>
+    <!-- STORY -->
+    <section class="pq-wrap pq-section">
+      <div class="section-head">
+        <h2>Why this exists</h2>
+        <p>Two problems kept showing up, so I built something for each.</p>
+      </div>
 
-    <p>
-      This project combines AI, UX design, and real-world scenarios to help
-      users learn at their own pace and make confident financial choices.
-    </p>
+      <div class="prose-grid">
+        <div class="prose-card">
+          <h3>Nobody teaches this at the right time</h3>
+          <p>
+            School covers a lot of things you'll use eventually. It mostly skips the ones you'll
+            use next week: whether to buy the thing, how to make ₹500 last the month, why the
+            same phone costs so differently across two sites.
+          </p>
+          <p>
+            By the time most people learn it, they've already picked up habits that are annoying
+            to undo. Starting earlier is easier than fixing it later.
+          </p>
+        </div>
 
+        <div class="prose-card">
+          <h3>The advice that does exist is unusable</h3>
+          <p>
+            It's either too basic to help ("save more!") or written in a language that assumes
+            you already know what an expense ratio is. Neither one gets you closer to a decision.
+          </p>
+          <p>
+            MoBo goes the other way. It asks about your actual situation, uses numbers you
+            recognise, and gives you something you can act on today.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRINCIPLES -->
+    <section class="pq-wrap pq-section">
+      <div class="section-head">
+        <h2>How I've tried to build it</h2>
+        <p>A few rules I keep coming back to.</p>
+      </div>
+
+      <div class="value-grid">
+        <div class="value-card">
+          <div class="value-ico">🗣️</div>
+          <h4>Plain language, always</h4>
+          <p>If a word needs a glossary, it needs a better sentence. Every lesson uses examples
+            you'd actually run into: recharges, snacks, subscriptions, a first job.</p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-ico">🎯</div>
+          <h4>Built around you</h4>
+          <p>Your roadmap comes from what you wrote about yourself, not a fixed syllabus. Two
+            people describing different starting points get genuinely different paths.</p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-ico">🤝</div>
+          <h4>Honest, not pushy</h4>
+          <p>MoBo isn't selling anything and doesn't get a cut. Sometimes the right answer is
+            "wait and save", and it'll say that.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECH -->
+    <section class="pq-wrap pq-section">
+      <div class="section-head">
+        <h2>What it's made of</h2>
+        <p>A student project, built in the open, still very much a work in progress.</p>
+      </div>
+
+      <div class="tech-row">
+        <span class="tech-chip">Python</span>
+        <span class="tech-chip">Flask</span>
+        <span class="tech-chip">OpenAI API</span>
+        <span class="tech-chip">SerpAPI</span>
+        <span class="tech-chip">Vanilla JS</span>
+        <span class="tech-chip">Hand-written CSS</span>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="pq-wrap">
+      <div class="cta-band">
+        <h2>Have a look for yourself</h2>
+        <p>Start with a roadmap, or just ask MoBo whether that thing in your cart is worth it.</p>
+        <a href="/mobo/learning" class="pq-btn lg on-dark">Open PocketIQ →</a>
+      </div>
+    </section>
   </main>
+
+  {% include "partials/footer.html" %}
 </body>
+
 </html>

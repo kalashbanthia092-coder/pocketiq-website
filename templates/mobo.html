@@ -1,575 +1,1239 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PocketIQ • MoBo</title>
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/static/ui.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
 <body>
   <script>
     const DEFAULT_MODE = "{{ mode }}";
   </script>
 
-  <header class="global-banner">
-    <div class="banner-left">
-      <img src="/static/pocketiq.png" alt="PocketIQ Logo" class="logo" />
-      <span class="brand-name">PocketIQ</span>
-    </div>
-
-    <nav class="banner-right">
-      <!-- Home page CTA -->
-      {% if request.path == "/" %}
-      <a href="/mobo/learning" class="banner-btn">Open MoBo</a>
-      {% else %}
-      <a href="/" class="banner-btn">Home</a>
-      {% endif %}
-
-      <a href="/about" class="banner-link">About Us</a>
-    </nav>
-  </header>
-
-
-
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>PocketIQ • MoBo</title>
-    <link rel="stylesheet" href="/static/layout.css" />
-    <link rel="stylesheet" href="/static/ui.css" />
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-      :root {
-        --brand: #2d248a;
-        --ink: #0b0b0b;
-        --muted: #5b5b5b;
-        --soft: #f4f3ff;
-        --success: #16c2a1;
-      }
-
-      body {
-        font-family: Inter, sans-serif;
-        background: #fdfdff;
-        color: var(--ink);
-        margin: 0;
-      }
-
-      header {
-        position: sticky;
-        top: 0;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid #ececf3;
-        padding: 16px 5%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 100;
-      }
-
-      .brand {
-        font-weight: 800;
-        color: var(--brand);
-        font-size: 1.7rem;
-      }
-
-      .btn {
-        background: var(--brand);
-        color: #fff;
-        border: none;
-        border-radius: 999px;
-        padding: 10px 20px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      .mode-bar {
-        display: flex;
-        justify-content: center;
-        background: var(--soft);
-        padding: 12px;
-        border-bottom: 1px solid #ececf3;
-      }
-
-      .mode-select {
-        display: flex;
-        gap: 18px;
-        align-items: center;
-        font-weight: 600;
-      }
-
-      .mode-select input[type="radio"] {
-        accent-color: var(--brand);
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 30px 20px;
-      }
-
-      /* Learning Mode */
-      #learning {
-        display: none;
-        text-align: center;
-      }
-
-      .context-box {
-        margin: 40px auto;
-        max-width: 700px;
-        text-align: left;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-        padding: 24px;
-      }
-
-      .context-box h2 {
-        color: var(--brand);
-        margin-bottom: 12px;
-      }
-
-      .context-box textarea {
-        width: 100%;
-        height: 120px;
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        padding: 12px;
-        font-family: Inter, sans-serif;
-        font-size: 1rem;
-        resize: none;
-        outline: none;
-      }
-
-      .context-box button {
-        margin-top: 16px;
-      }
-
-      /* Roadmap + Assistant */
-      .roadmap-container {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 40px;
-        margin-top: 3rem;
-        padding: 0 5%;
-      }
-
-      .roadmap-wrapper {
-        flex: 1;
-        max-width: 70%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .roadmap-track {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding: 3rem 1rem;
-        gap: 60px;
-        position: relative;
-      }
-
-      .step {
-        background: #ffffff;
-        border: 2px solid #e3e2f5;
-        border-radius: 16px;
-        box-shadow: 0 4px 16px rgba(45, 36, 138, 0.08);
-        padding: 20px 28px;
-        width: 240px;
-        text-align: left;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-      }
-
-      .step h4 {
-        color: #2d248a;
-        margin-bottom: 8px;
-        font-size: 1.1rem;
-      }
-
-      .step p {
-        color: #333;
-        font-size: 0.95rem;
-        line-height: 1.4;
-      }
-
-      .step.completed {
-        background: #2d248a;
-        color: #fff;
-        border-color: #2d248a;
-      }
-
-      .step.locked {
-        opacity: 0.4;
-        cursor: not-allowed;
-        filter: grayscale(0.4);
-      }
-
-      .step:not(.locked):hover {
-        transform: translateY(-6px);
-        box-shadow: 0 6px 18px rgba(45, 36, 138, 0.2);
-      }
-
-      .connector {
-        position: relative;
-        width: 120px;
-        height: 40px;
-        margin-top: 30px;
-      }
-
-      .connector svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 120px;
-        height: 40px;
-      }
-
-      .connector path {
-        fill: none;
-        stroke: #d1cef7;
-        stroke-width: 3px;
-        stroke-linecap: round;
-        transition: stroke 0.3s ease;
-      }
-
-      .connector.completed path {
-        stroke: #2d248a;
-      }
-
-      /* MoBo Assistant */
-      .mobo-assistant {
-        width: 300px;
-        min-height: 500px;
-        background: #2d248a;
-        color: white;
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-      }
-
-      .mobo-assistant h3 {
-        margin: 0 0 12px;
-        font-size: 1.3rem;
-      }
-
-      .mobo-chat {
-        flex: 1;
-        background: #3a3099;
-        border-radius: 10px;
-        padding: 12px;
-        overflow-y: auto;
-        margin-bottom: 12px;
-      }
-
-      .mobo-chat p {
-        font-size: 0.9rem;
-        margin: 6px 0;
-        line-height: 1.4;
-      }
-
-      .mobo-input {
-        display: flex;
-        gap: 8px;
-      }
-
-      .mobo-input input {
-        flex: 1;
-        border: none;
-        border-radius: 8px;
-        padding: 8px;
-        font-size: 0.9rem;
-      }
-
-      .mobo-input button {
-        background: #fff;
-        color: #2d248a;
-        font-weight: 600;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 14px;
-        cursor: pointer;
-      }
-
-      .mobo-input button:hover {
-        background: #ddd;
-      }
-
-      /* Decision Mode */
-      #decision {
-        display: none;
-      }
-
-      .chat-log {
-        background: #fafaff;
-        border: 1px solid #e8e8f8;
-        border-radius: 14px;
-        padding: 20px;
-        height: 400px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .user-msg {
-        background: var(--brand);
-        color: #fff;
-        padding: 10px 14px;
-        border-radius: 14px;
-        align-self: flex-end;
-      }
-
-      .bot-msg {
-        background: #ebe8ff;
-        color: #000;
-        padding: 10px 14px;
-        border-radius: 14px;
-        align-self: flex-start;
-      }
-
-      .chat-form {
-        display: flex;
-        gap: 12px;
-        margin-top: 16px;
-        justify-content: center;
-      }
-
-      .chat-form input {
-        flex: 1;
-        padding: 12px;
-        border-radius: 999px;
-        border: 1px solid #d9d6f5;
-      }
-
-      .chat-form button {
-        background: var(--brand);
-        color: #fff;
-        border: none;
-        border-radius: 999px;
-        padding: 10px 22px;
-      }
-
-      /* Compare Mode */
-      #compare {
-        display: none;
-        background: #fff;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      }
-
-      .compare-grid {
-        display: flex;
-        gap: 40px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .compare-box {
-        flex: 1 1 45%;
-        text-align: center;
-      }
-
-      .compare-box input {
-        width: 100%;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        margin-bottom: 10px;
-      }
-
-      .dark-box {
-        width: 100%;
-        aspect-ratio: 16/9;
-        background: #1b1441;
-        border: 2px solid black;
-        border-radius: 10px;
-      }
-
-      #compare-output {
-        text-align: center;
-        font-weight: 600;
-        color: #000;
-        margin-top: 16px;
-      }
-
-      .roadmap-track::-webkit-scrollbar {
-        height: 8px;
-      }
-
-      .roadmap-track::-webkit-scrollbar-thumb {
-        background: #2d248a;
-        border-radius: 10px;
-      }
-
-      .roadmap-track::-webkit-scrollbar-track {
-        background: #eee;
-      }
-    </style>
-  </head>
-
+  {% include "partials/header.html" %}
 
   <div class="mode-bar">
-    <div class="mode-tabs">
-      <a href="/mobo/learning" data-mode="learning">Learning</a>
-      <a href="/mobo/decision" data-mode="decision">Decision</a>
-      <a href="/mobo/compare" data-mode="compare">Compare</a>
-    </div>
-
+    <nav class="mode-tabs" aria-label="MoBo modes">
+      <a href="/mobo/learning" class="{% if mode == 'learning' %}active{% endif %}">
+        <span class="mode-tab-ico">📘</span> Learning
+      </a>
+      <a href="/mobo/decision" class="{% if mode == 'decision' %}active{% endif %}">
+        <span class="mode-tab-ico">🧠</span> Decision
+      </a>
+      <a href="/mobo/compare" class="{% if mode == 'compare' %}active{% endif %}">
+        <span class="mode-tab-ico">⚖️</span> Compare
+      </a>
+    </nav>
   </div>
 
+  <main class="pq-wrap wide pq-page">
 
-  <main class="container">
-    <!-- Learning Mode -->
-    <section id="learning">
-      <div class="context-box">
-        <h2>Tell MoBo about your financial background:</h2>
-        <p>Describe your current understanding of money, saving, budgeting, or investing
-          — (e.g. “I save a bit each month but don’t know how to invest yet.”)</p>
-        <textarea id="user-context"
-          placeholder="Write a few lines about your financial background or what you'd like to learn about...                      The more detail you give me, the better I can help you!"></textarea>
-        <button id="generate-roadmap" class="btn">Generate Personalized Roadmap</button>
-      </div>
+    <!-- ==================== LEARNING MODE ==================== -->
+    <section id="learning" style="display:none;">
 
-      <section id="roadmap" style="display:none;">
-        <h2>Your Personalized Learning Roadmap</h2>
-        <div class="roadmap-container-fixed">
-          <div class="roadmap-scroll">
-            <div id="track" class="roadmap-track"></div>
+      <!-- STATE 1: setup -->
+      <div id="learning-setup" class="learning-setup">
+        <div class="setup-hero">
+          <span class="eyebrow">Learning Mode</span>
+          <h1>Get good with money, one step at a time</h1>
+          <p>Tell MoBo where you're starting from and it'll map out a path that fits.
+            Short lessons, real examples, no jargon.</p>
+        </div>
+
+        <div class="setup-grid">
+          <div class="context-box">
+            <h2>Where are you with money right now?</h2>
+
+            <div class="method-toggle" role="tablist" aria-label="How to give MoBo context">
+              <button type="button" class="method-tab active" data-method="write" role="tab" aria-selected="true">
+                <span class="method-ico">✍️</span> Write it yourself
+              </button>
+              <button type="button" class="method-tab" data-method="quiz" role="tab" aria-selected="false">
+                <span class="method-ico">⚡</span> Quick questions
+              </button>
+            </div>
+
+            <!-- METHOD A: free text -->
+            <div id="method-write" class="method-panel">
+              <p class="context-hint">Write a few lines about what you already understand, or what's
+                been confusing you. For example: <em>"I save a bit each month but I have no idea how
+                investing works."</em></p>
+              <textarea id="user-context"
+                placeholder="A few lines is plenty. The more you tell MoBo, the better your roadmap fits."></textarea>
+
+              <div class="context-chips">
+                <span class="context-chip-label">Or start from one of these:</span>
+                <button type="button" class="context-chip" data-fill="I'm starting from scratch. I get pocket money every month but I've never budgeted or saved properly.">Complete beginner</button>
+                <button type="button" class="context-chip" data-fill="I save a bit every month but I don't understand how investing, mutual funds or SIPs actually work.">I save, can't invest</button>
+                <button type="button" class="context-chip" data-fill="I want to understand credit cards, loans, EMIs and how interest works before I start earning.">Credit &amp; loans</button>
+              </div>
+
+              <button id="generate-roadmap" class="pq-btn lg">Build my roadmap</button>
+            </div>
+
+            <!-- METHOD B: rapid-fire questions -->
+            <div id="method-quiz" class="method-panel" style="display:none;">
+              <p class="context-hint">Quick questions, mostly one tap each. MoBo will start building
+                as soon as it knows enough, and you can stop early or keep going for a sharper fit.</p>
+
+              <div class="quiz-track" aria-hidden="true">
+                <div class="quiz-track-fill" id="quiz-fill" style="width:0%"></div>
+              </div>
+              <div class="quiz-meta">
+                <span id="quiz-count">Question 1</span>
+                <span id="quiz-status" class="quiz-status">Getting started</span>
+              </div>
+
+              <div id="quiz-body" class="quiz-body"></div>
+
+              <div class="quiz-nav">
+                <button type="button" id="quiz-back" class="ghost-btn" disabled>← Back</button>
+                <div class="quiz-nav-right">
+                  <button type="button" id="quiz-skip" class="quiz-skip">Skip</button>
+                  <button type="button" id="quiz-next" class="pq-btn" disabled>Next</button>
+                  <button type="button" id="quiz-finish" class="pq-btn" style="display:none;">Build my roadmap</button>
+                </div>
+              </div>
+
+              <!-- shown once MoBo has enough to work with -->
+              <div id="quiz-review" class="quiz-review" style="display:none;">
+                <div class="quiz-review-head">
+                  <span class="tip-label">✅ Here's what MoBo picked up</span>
+                  <button type="button" id="quiz-edit" class="text-link">Edit as text <span>→</span></button>
+                </div>
+                <p id="quiz-summary"></p>
+              </div>
+            </div>
           </div>
 
-          <!-- MoBo Assistant -->
+          <aside class="setup-side">
+            <div class="side-card">
+              <h3>What you'll get</h3>
+              <ul class="perk-list">
+                <li><span class="perk-ico">🗺️</span><div><strong>A roadmap that fits you</strong><span>8-10 steps from your answer</span></div></li>
+                <li><span class="perk-ico">📖</span><div><strong>Short lessons</strong><span>Written in rupees, not theory</span></div></li>
+                <li><span class="perk-ico">⚡</span><div><strong>XP and streaks</strong><span>Something to keep going for</span></div></li>
+                <li><span class="perk-ico">💬</span><div><strong>MoBo on hand</strong><span>Ask anything, any time</span></div></li>
+              </ul>
+            </div>
+            <div class="side-card tip-card">
+              <span class="tip-label">💡 Money tip</span>
+              <p id="setup-tip">Move your savings the day money arrives, not whatever's left at the
+                end of the month. There's never anything left.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- STATE 2: workspace -->
+      <div id="learning-workspace" class="learning-workspace" style="display:none;">
+
+        <!-- NOTE: a <div>, not <header>. Bare <header> elements used to pick up a
+             global 100vw reset, which pushed the page wider than the viewport. -->
+        <div class="progress-header">
+          <div class="level-chip">
+            <span class="level-num" id="level-num">1</span>
+            <span class="level-word">LEVEL</span>
+          </div>
+
+          <div class="xp-block">
+            <div class="xp-meta">
+              <strong id="level-title">Money Rookie</strong>
+              <span id="xp-count">0 / 200 XP</span>
+            </div>
+            <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+            <div class="xp-hint" id="xp-hint">Finish your first lesson to earn 100 XP</div>
+          </div>
+
+          <div class="stat-chips">
+            <div class="stat-chip"><span class="stat-ico">🔥</span><div><strong id="stat-streak">1</strong><span>day streak</span></div></div>
+            <div class="stat-chip"><span class="stat-ico">📘</span><div><strong id="stat-steps">0/0</strong><span>steps done</span></div></div>
+            <div class="stat-chip"><span class="stat-ico">⭐</span><div><strong id="stat-xp">0</strong><span>total XP</span></div></div>
+          </div>
+
+          <button id="restart-roadmap" class="ghost-btn" title="Start over with a new background">New roadmap</button>
+        </div>
+
+        <div class="workspace-grid">
+          <aside class="roadmap-rail">
+            <div class="rail-head">
+              <h3>Your roadmap</h3>
+              <span class="rail-progress" id="rail-progress">0%</span>
+            </div>
+            <div id="track" class="rail-steps"></div>
+
+            <div class="badge-box">
+              <h4>Achievements</h4>
+              <div class="badge-row" id="badge-row"></div>
+            </div>
+          </aside>
+
+          <main class="article-pane" id="article-pane">
+            <div class="article-empty" id="article-empty">
+              <div class="empty-ico">📖</div>
+              <h3>Pick a step to start reading</h3>
+              <p>Choose any unlocked step on the left. The lesson opens right here, so you're not
+                scrolling around looking for it.</p>
+              <div class="empty-tip">
+                <span class="tip-label">💡 Did you know?</span>
+                <p id="workspace-tip">₹50 a day adds up to more than ₹18,000 a year. That's a decent
+                  phone, paid for by skipping one snack.</p>
+              </div>
+            </div>
+
+            <article class="article-body-wrap" id="article-box" style="display:none;">
+              <div class="article-head">
+                <span class="article-step-tag" id="article-step-tag">Step 1</span>
+                <h2 id="article-title"></h2>
+              </div>
+              <div id="article-body" class="article-content"></div>
+              <div class="article-actions" id="article-actions"></div>
+            </article>
+          </main>
+
           <aside class="mobo-assistant-fixed">
             <h3>MoBo Assistant</h3>
             <div id="mobo-chat" class="mobo-chat">
-              <p><strong>MoBo:</strong> Hey there! Need help understanding something? Ask me anything!</p>
+              <p><strong>MoBo:</strong> I'm your tutor for this bit. Ask me anything about money:
+                a concept, an example, or whatever's not clicking in your current lesson.</p>
+            </div>
+            <div class="mobo-chips" id="mobo-chips">
+              <button type="button" class="mobo-chip">Explain this simply</button>
+              <button type="button" class="mobo-chip">Give me an example</button>
+              <button type="button" class="mobo-chip">Why does this matter?</button>
             </div>
             <div class="mobo-input">
-              <input type="text" id="mobo-input" placeholder="Ask about your roadmap..." />
+              <input type="text" id="mobo-input" placeholder="Ask MoBo anything..." autocomplete="off" />
               <button id="mobo-send">Send</button>
             </div>
           </aside>
         </div>
-
-        <!-- Article Viewer -->
-        <div id="article"
-          style="display:none; background:#fff; padding:24px; border-radius:16px; margin-top:30px; box-shadow:0 4px 16px rgba(0,0,0,0.08); text-align:left;">
-          <h2 id="article-title" style="color:#2d248a;"></h2>
-          <div id="article-body" style="line-height:1.6; color:#111; font-size:1rem;"></div>
-          <button id="back-to-roadmap" class="btn" style="margin-top:20px;">← Back to Roadmap</button>
-        </div>
-      </section>
-
-
-
-
+      </div>
     </section>
 
-    <!-- Decision Mode -->
-    <section id="decision">
-
-      <!-- Decision Mode Header -->
-      <div class="mode-header">
-        <h2> MoBo Decision Bot</h2>
-        <p>
-          Tell MoBo what you’re thinking of buying.
-          It’ll ask follow-up questions and help you decide whether it’s worth saving up, thinking again, or making the
-          purchase.
-        </p>
+    <!-- ==================== DECISION MODE ==================== -->
+    <section id="decision" style="display:none;">
+      <div class="mode-intro">
+        <span class="eyebrow">Decision Mode</span>
+        <h1>Should you actually buy it?</h1>
+        <p>Tell MoBo what you've got your eye on. It asks a few questions, then gives you a
+          straight answer instead of a lecture.</p>
       </div>
 
-      <!-- Chat Area -->
-      <div id="chat-log" class="chat-log"></div>
+      <div class="split-layout">
+        <div class="chat-card">
+          <div class="chat-head">
+            <div class="chat-avatar">🧠</div>
+            <div class="chat-head-text">
+              <strong>MoBo · Decision Coach</strong>
+              <span>Asks first, never judges</span>
+            </div>
+            <span class="chat-status">Ready</span>
+          </div>
 
-      <form id="chat-form" class="chat-form">
-        <input id="user-input" placeholder="e.g. Should I buy wireless earbuds for ₹3,000?" />
-        <button type="submit">Send</button>
-      </form>
+          <div id="chat-log" class="chat-scroll">
+            <div class="chat-empty" id="chat-empty">
+              <div class="empty-ico">🛒</div>
+              <h3>What are you thinking of buying?</h3>
+              <p>Give MoBo the item and roughly what it costs. It'll take it from there.</p>
+            </div>
+          </div>
 
+          <div class="composer">
+            <div class="starter-chips" id="decision-chips">
+              <button type="button" class="starter-chip">Should I buy ₹3,000 earbuds?</button>
+              <button type="button" class="starter-chip">₹15,000 phone upgrade, worth it?</button>
+              <button type="button" class="starter-chip">Is a ₹599/month subscription worth keeping?</button>
+            </div>
+            <form id="chat-form" class="composer-row">
+              <input id="user-input" autocomplete="off"
+                placeholder="e.g. I want ₹8,000 running shoes but I already own a pair" />
+              <button type="submit" class="pq-btn">Send</button>
+            </form>
+          </div>
+        </div>
+
+        <aside class="side-stack">
+          <div class="side-card">
+            <h3>How this goes</h3>
+            <ol class="mini-steps">
+              <li>Tell MoBo the item and the price.</li>
+              <li>Answer a few questions about why you want it.</li>
+              <li>Get a verdict you can act on.</li>
+            </ol>
+          </div>
+
+          <div class="side-card">
+            <h3>What it weighs up</h3>
+            <ul class="check-list">
+              <li>The price against what you actually have</li>
+              <li>How often you'd genuinely use it</li>
+              <li>Whether it replaces something you own</li>
+              <li>What else that money could do</li>
+            </ul>
+          </div>
+
+          <div class="side-card tip-card">
+            <span class="tip-label">💡 Rule of thumb</span>
+            <p>Sleep on anything you didn't plan to buy. Most urges don't survive 24 hours.</p>
+          </div>
+
+          <button id="reset-decision" class="ghost-btn">Start a new decision</button>
+        </aside>
+      </div>
     </section>
 
-
-    <!-- Compare Mode -->
-    <section id="compare">
-      <div class="compare-grid">
-        <div class="compare-box">
-          <input id="item1" placeholder="Enter item you want to buy..." />
-          <div class="dark-box">
-            <img id="img1" class="overlay-img" alt="Item image" />
-          </div>
-          <p>What are you trying to buy?<br>(Be as specific as you can!)</p>
-        </div>
-        <div class="compare-box">
-          <input id="item2" placeholder="Enter item to compare it with..." />
-          <div class="dark-box">
-            <img id="img2" class="overlay-img" alt="Item image" />
-          </div>
-          <p>What would you like to compare it with?<br>(Be as specific as you can!)</p>
-        </div>
+    <!-- ==================== COMPARE MODE ==================== -->
+    <section id="compare" style="display:none;">
+      <div class="mode-intro">
+        <span class="eyebrow">Compare Mode</span>
+        <h1>What is it really costing you?</h1>
+        <p>Put two things side by side. Live prices, and the trade-off in terms that actually
+          land.</p>
       </div>
-      <button id="compare-btn" class="btn">Compare</button>
-      <div id="compare-output"></div>
+
+      <div class="split-layout">
+        <div>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <span class="cmp-label">You want</span>
+              <input id="item1" autocomplete="off" placeholder="e.g. iPhone 15" />
+              <div class="cmp-media">
+                <img id="img1" alt="" />
+                <span class="cmp-media-placeholder" id="ph1">Product image shows up here</span>
+              </div>
+              <div class="cmp-meta" id="meta1"></div>
+            </div>
+
+            <div class="cmp-vs">
+              <div class="vs-badge">VS</div>
+              <button class="swap-btn" id="swap-items" type="button" title="Swap sides">⇄</button>
+            </div>
+
+            <div class="cmp-card">
+              <span class="cmp-label">Instead of</span>
+              <input id="item2" autocomplete="off" placeholder="e.g. OnePlus 12" />
+              <div class="cmp-media">
+                <img id="img2" alt="" />
+                <span class="cmp-media-placeholder" id="ph2">Product image shows up here</span>
+              </div>
+              <div class="cmp-meta" id="meta2"></div>
+            </div>
+          </div>
+
+          <div class="cmp-actions">
+            <button id="compare-btn" class="pq-btn lg">Compare prices</button>
+            <span class="action-note" id="compare-status"></span>
+          </div>
+
+          <div id="compare-output"></div>
+        </div>
+
+        <aside class="side-stack">
+          <div class="side-card">
+            <h3>Try one of these</h3>
+            <div class="preset-list">
+              <button class="preset-btn" type="button" data-a="iPhone 15" data-b="OnePlus 12">
+                <b>iPhone 15</b>against OnePlus 12</button>
+              <button class="preset-btn" type="button" data-a="AirPods Pro" data-b="OnePlus Buds 3">
+                <b>AirPods Pro</b>against OnePlus Buds 3</button>
+              <button class="preset-btn" type="button" data-a="MacBook Air M2" data-b="Dell Inspiron 15">
+                <b>MacBook Air M2</b>against Dell Inspiron 15</button>
+              <button class="preset-btn" type="button" data-a="PlayStation 5" data-b="Xbox Series S">
+                <b>PlayStation 5</b>against Xbox Series S</button>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h3>Reading the result</h3>
+            <ul class="check-list">
+              <li>Prices come from live shopping listings</li>
+              <li>Dollar prices convert at roughly ₹95</li>
+              <li>Be specific: model names beat brand names</li>
+            </ul>
+          </div>
+
+          <div class="side-card tip-card">
+            <span class="tip-label">💡 Worth remembering</span>
+            <p>The gap between two options is money you keep. Ask what else it could buy before
+              you decide.</p>
+          </div>
+        </aside>
+      </div>
     </section>
   </main>
 
+  {% include "partials/footer.html" %}
+
   <script>
-
     document.addEventListener("DOMContentLoaded", () => {
+      const el = (id) => document.getElementById(id);
+
+      /* ---------------- mode switching ---------------- */
       const sections = {
-        learning: document.getElementById("learning"),
-        decision: document.getElementById("decision"),
-        compare: document.getElementById("compare")
-      };
-      const tabs = document.querySelectorAll(".mode-tab");
-
-      const showMode = (mode) => {
-        Object.entries(sections).forEach(([key, section]) => {
-          section.style.display = key === mode ? "block" : "none";
-        });
-
-        tabs.forEach(tab => {
-          tab.classList.toggle("active", tab.dataset.mode === mode);
-        });
+        learning: el("learning"),
+        decision: el("decision"),
+        compare: el("compare")
       };
 
-      // Tab click handling
-      tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-          showMode(tab.dataset.mode);
+      const initialMode = DEFAULT_MODE || "learning";
+      Object.entries(sections).forEach(([key, section]) => {
+        section.style.display = key === initialMode ? "block" : "none";
+      });
+
+      /* ---------------- shared helpers ---------------- */
+      function toast(message) {
+        const t = document.createElement("div");
+        t.className = "pq-toast";
+        t.textContent = message;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => t.classList.add("show"));
+        setTimeout(() => {
+          t.classList.remove("show");
+          setTimeout(() => t.remove(), 300);
+        }, 2800);
+      }
+
+      /* =====================================================================
+         LEARNING MODE
+         ===================================================================== */
+
+      const XP_PER_STEP = 100;
+      const XP_PER_LEVEL = 200;
+      const LEVEL_TITLES = [
+        "Money Rookie", "Savings Starter", "Budget Builder", "Smart Spender",
+        "Investing Apprentice", "Money Strategist", "Finance Pro"
+      ];
+      const BADGES = [
+        { id: "first", icon: "🎯", label: "First Lesson", hint: "Read your first step" },
+        { id: "half", icon: "🚀", label: "Halfway", hint: "Finish half your roadmap" },
+        { id: "streak3", icon: "🔥", label: "3-Day Streak", hint: "Learn 3 days in a row" },
+        { id: "complete", icon: "🏆", label: "Roadmap Done", hint: "Complete every step" }
+      ];
+      const TIPS = [
+        "₹50 a day adds up to more than ₹18,000 a year. That's a decent phone, paid for by skipping one snack.",
+        "Move your savings the day money arrives, not whatever's left at month end. There's never anything left.",
+        "A ₹499/month subscription is ₹5,988 a year. Always check the yearly number before you commit.",
+        "Three to six months of expenses set aside is what stops a small surprise turning into debt.",
+        "Time matters more than amount. ₹500 a month started early usually beats ₹5,000 a month started late.",
+        "Give yourself 24 hours on anything you didn't plan to buy. Most of the urge wears off."
+      ];
+
+      const store = {
+        get roadmap() { try { return JSON.parse(localStorage.getItem("pqi_roadmap") || "[]"); } catch { return []; } },
+        set roadmap(v) { localStorage.setItem("pqi_roadmap", JSON.stringify(v)); },
+        get progress() { return Number(localStorage.getItem("pqi_progress") || "0"); },
+        set progress(v) { localStorage.setItem("pqi_progress", String(v)); },
+        get xp() { return Number(localStorage.getItem("pqi_xp") || "0"); },
+        set xp(v) { localStorage.setItem("pqi_xp", String(v)); },
+        get badges() { try { return JSON.parse(localStorage.getItem("pqi_badges") || "[]"); } catch { return []; } },
+        set badges(v) { localStorage.setItem("pqi_badges", JSON.stringify(v)); },
+        get context() { return localStorage.getItem("user_context") || ""; },
+        set context(v) { localStorage.setItem("user_context", v); }
+      };
+
+      const setupView = el("learning-setup");
+      const workspaceView = el("learning-workspace");
+      const track = el("track");
+      const articleBox = el("article-box");
+      const articleEmpty = el("article-empty");
+
+      let activeStep = null;
+
+      function todayKey() { return new Date().toISOString().slice(0, 10); }
+
+      function updateStreak() {
+        const today = todayKey();
+        const last = localStorage.getItem("pqi_last_day");
+        let streak = Number(localStorage.getItem("pqi_streak") || "0");
+
+        if (last === today) {
+          streak = streak || 1;
+        } else {
+          const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+          streak = last === yesterday ? streak + 1 : 1;
+          localStorage.setItem("pqi_last_day", today);
+        }
+        localStorage.setItem("pqi_streak", String(streak));
+        return streak;
+      }
+
+      function levelInfo(xp) {
+        const level = Math.min(Math.floor(xp / XP_PER_LEVEL) + 1, LEVEL_TITLES.length);
+        const isMax = level >= LEVEL_TITLES.length;
+        return {
+          level,
+          title: LEVEL_TITLES[level - 1],
+          intoLevel: isMax ? XP_PER_LEVEL : xp % XP_PER_LEVEL,
+          needed: XP_PER_LEVEL,
+          isMax
+        };
+      }
+
+      function renderStats() {
+        const items = store.roadmap;
+        const done = Math.min(store.progress, items.length);
+        const xp = store.xp;
+        const info = levelInfo(xp);
+        const streak = Number(localStorage.getItem("pqi_streak") || "1");
+        const pct = items.length ? Math.round((done / items.length) * 100) : 0;
+
+        el("level-num").textContent = info.level;
+        el("level-title").textContent = info.title;
+        el("xp-count").textContent = info.isMax ? `${xp} XP · max level` : `${info.intoLevel} / ${info.needed} XP`;
+        el("xp-fill").style.width = `${Math.round((info.intoLevel / info.needed) * 100)}%`;
+        el("xp-hint").textContent = info.isMax
+          ? "You've maxed out. Nice work."
+          : `${info.needed - info.intoLevel} XP to Level ${info.level + 1}`;
+
+        el("stat-streak").textContent = streak;
+        el("stat-steps").textContent = `${done}/${items.length}`;
+        el("stat-xp").textContent = xp;
+        el("rail-progress").textContent = `${pct}%`;
+
+        renderBadges();
+      }
+
+      function renderBadges() {
+        const earned = store.badges;
+        el("badge-row").innerHTML = BADGES.map(b => `
+          <div class="badge ${earned.includes(b.id) ? "earned" : ""}" title="${b.hint}">
+            <span class="badge-ico">${b.icon}</span>
+            <span class="badge-label">${b.label}</span>
+          </div>`).join("");
+      }
+
+      function awardBadge(id) {
+        const earned = store.badges;
+        if (earned.includes(id)) return;
+        earned.push(id);
+        store.badges = earned;
+        const badge = BADGES.find(b => b.id === id);
+        if (badge) toast(`${badge.icon} Achievement unlocked: ${badge.label}!`);
+      }
+
+      function checkBadges() {
+        const items = store.roadmap;
+        const done = Math.min(store.progress, items.length);
+        if (done >= 1) awardBadge("first");
+        if (items.length && done >= Math.ceil(items.length / 2)) awardBadge("half");
+        if (items.length && done >= items.length) awardBadge("complete");
+        if (Number(localStorage.getItem("pqi_streak") || "1") >= 3) awardBadge("streak3");
+      }
+
+      function showWorkspace() {
+        setupView.style.display = "none";
+        workspaceView.style.display = "block";
+      }
+
+      function showSetup() {
+        workspaceView.style.display = "none";
+        setupView.style.display = "block";
+      }
+
+      function renderRail() {
+        const items = store.roadmap;
+        const progress = store.progress;
+        track.innerHTML = "";
+
+        items.forEach((it, i) => {
+          const locked = i > progress;
+          const done = i < progress;
+          const current = i === progress;
+
+          const step = document.createElement("button");
+          step.type = "button";
+          step.className = "rail-step" +
+            (done ? " done" : "") +
+            (current ? " current" : "") +
+            (locked ? " locked" : "") +
+            (activeStep === i ? " active" : "");
+          step.disabled = locked;
+
+          step.innerHTML = `
+            <span class="rail-dot">${done ? "✓" : i + 1}</span>
+            <span class="rail-text">
+              <span class="rail-title">${it.title}</span>
+              <span class="rail-sub">${it.summary || ""}</span>
+            </span>
+            ${current ? '<span class="rail-flag">Next up</span>' : ""}`;
+
+          if (!locked) step.addEventListener("click", () => openArticle(i, it));
+          track.appendChild(step);
+        });
+      }
+
+      async function openArticle(i, item) {
+        activeStep = i;
+        renderRail();
+
+        articleEmpty.style.display = "none";
+        articleBox.style.display = "block";
+        el("article-step-tag").textContent = `Step ${i + 1} of ${store.roadmap.length}`;
+        el("article-title").textContent = item.title;
+        el("article-actions").innerHTML = "";
+        el("article-body").innerHTML =
+          `<div class="article-loading"><span class="spinner"></span> MoBo is writing this lesson…</div>`;
+
+        articleBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+        try {
+          const res = await fetch("/generate_article", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              topic: item.title,
+              context: store.context,
+              summary: item.summary || ""
+            })
+          });
+
+          const data = await res.json();
+          if (!data || !data.article) throw new Error("Invalid response from server");
+
+          el("article-body").innerHTML = marked.parse(data.article);
+          renderArticleActions(i, item);
+        } catch (e) {
+          console.error("Article load error:", e);
+          el("article-body").innerHTML =
+            `<p class="article-error">Couldn't load this lesson. Check your connection and try again.</p>`;
+          el("article-actions").innerHTML = `<button class="pq-btn" id="retry-article">Retry</button>`;
+          el("retry-article").onclick = () => openArticle(i, item);
+        }
+      }
+
+      function renderArticleActions(i, item) {
+        const items = store.roadmap;
+        const progress = store.progress;
+        const actions = el("article-actions");
+
+        if (i === progress) {
+          const last = i === items.length - 1;
+          actions.innerHTML = `
+            <button class="pq-btn" id="complete-step">
+              ${last ? "Finish roadmap" : "Mark complete"} <span class="xp-pill">+${XP_PER_STEP} XP</span>
+            </button>
+            <span class="action-note">Completing this unlocks the next step</span>`;
+          el("complete-step").onclick = () => completeStep(i, item);
+        } else {
+          const next = items[i + 1];
+          actions.innerHTML = `<span class="action-note">✓ Completed</span>` +
+            (next && i + 1 <= store.progress
+              ? `<button class="pq-btn ghost" id="next-step">Next: ${next.title} →</button>` : "");
+          const nextBtn = el("next-step");
+          if (nextBtn) nextBtn.onclick = () => openArticle(i + 1, next);
+        }
+      }
+
+      function completeStep(i, item) {
+        const items = store.roadmap;
+        const before = levelInfo(store.xp).level;
+
+        store.progress = Math.min(i + 1, items.length);
+        store.xp = store.xp + XP_PER_STEP;
+
+        const after = levelInfo(store.xp).level;
+
+        renderStats();
+        checkBadges();
+        renderBadges();
+        renderRail();
+        renderArticleActions(i, item);
+
+        if (after > before) toast(`⭐ Level ${after}, you're a ${LEVEL_TITLES[after - 1]} now!`);
+        else toast(`+${XP_PER_STEP} XP earned`);
+
+        const next = items[i + 1];
+        if (next) setTimeout(() => openArticle(i + 1, next), 450);
+      }
+
+      const contextBox = el("user-context");
+      const genBtn = el("generate-roadmap");
+
+      document.querySelectorAll(".context-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          contextBox.value = chip.dataset.fill;
+          contextBox.focus();
         });
       });
 
-      // Default mode
-      const initialMode = DEFAULT_MODE || "learning";
-      showMode(initialMode);
+      /* ---- shared: both context methods funnel through here ---- */
+      async function buildRoadmap(context, btn, restoreLabel) {
+        store.context = context;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> Building your roadmap…`;
 
-      // Optional: visually activate the tab
-      document.querySelector(`[data-mode="${initialMode}"]`)?.classList.add("active");
+        try {
+          const res = await fetch("/generate_roadmap", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ context })
+          });
 
+          const data = await res.json();
+          let roadmap = data.roadmap;
 
+          if (typeof roadmap === "string") {
+            try { roadmap = JSON.parse(roadmap); } catch { roadmap = []; }
+          }
 
-      // Decision Chat
-      const chatForm = document.getElementById("chat-form");
-      const chatLog = document.getElementById("chat-log");
-      const chatInput = document.getElementById("user-input");
-      chatForm.addEventListener("submit", async e => {
-        e.preventDefault();
-        const msg = chatInput.value.trim();
+          if (!Array.isArray(roadmap) || roadmap.length === 0) {
+            roadmap = [
+              { title: "Budgeting Basics", summary: "Plan and track where your money goes each month." },
+              { title: "Saving Goals", summary: "Set achievable short- and long-term savings targets." },
+              { title: "Smart Spending", summary: "Tell needs from wants and build mindful spending habits." },
+              { title: "Intro to Investing", summary: "Understand compounding and basic investment options." },
+              { title: "Credit & Taxes", summary: "Learn how credit works and why taxes are a life skill." }
+            ];
+          }
+
+          store.roadmap = roadmap;
+          store.progress = 0;
+          activeStep = null;
+
+          articleBox.style.display = "none";
+          articleEmpty.style.display = "block";
+
+          showWorkspace();
+          renderRail();
+          renderStats();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (e) {
+          console.error("Roadmap generation error:", e);
+          toast("Couldn't build a roadmap just then. Try again in a moment.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = restoreLabel;
+        }
+      }
+
+      genBtn.addEventListener("click", () => {
+        const context = contextBox.value.trim();
+        if (!context) {
+          contextBox.classList.add("shake");
+          contextBox.focus();
+          setTimeout(() => contextBox.classList.remove("shake"), 500);
+          return;
+        }
+        buildRoadmap(context, genBtn, "Build my roadmap");
+      });
+
+      /* =====================================================================
+         RAPID-FIRE CONTEXT QUIZ
+         Branching question bank. `when` decides whether a question applies,
+         so the length varies with the answers. Once every REQUIRED question
+         is answered, MoBo has enough and the build button unlocks; anything
+         after that is optional detail.
+         ===================================================================== */
+
+      const QUIZ = [
+        {
+          id: "stage", type: "choice",
+          q: "Where are you right now?",
+          options: [
+            { v: "school", label: "Still in school" },
+            { v: "college", label: "In college" },
+            { v: "working", label: "Working / first job" },
+            { v: "other", label: "Something else" }
+          ]
+        },
+        {
+          id: "income", type: "choice",
+          q: "Where does your money come from?",
+          options: [
+            { v: "pocket", label: "Pocket money" },
+            { v: "family", label: "I ask family when I need it" },
+            { v: "parttime", label: "Part-time work or freelancing" },
+            { v: "salary", label: "A salary" },
+            { v: "mixed", label: "A mix of these" }
+          ]
+        },
+        {
+          id: "amount", type: "choice", optional: true,
+          q: "Roughly how much passes through your hands in a month?",
+          hint: "Only used to size the examples in your lessons.",
+          options: [
+            { v: "u1000", label: "Under ₹1,000" },
+            { v: "1to5", label: "₹1,000 to ₹5,000" },
+            { v: "5to20", label: "₹5,000 to ₹20,000" },
+            { v: "o20", label: "More than ₹20,000" }
+          ]
+        },
+        {
+          id: "saving", type: "choice",
+          q: "Do you manage to put any of it aside?",
+          options: [
+            { v: "never", label: "Never, it's gone by month end" },
+            { v: "sometimes", label: "Sometimes, when there's extra" },
+            { v: "regular", label: "Yes, a set amount every month" },
+            { v: "goal", label: "Yes, saving toward something specific" }
+          ]
+        },
+        {
+          id: "blocker", type: "choice",
+          when: a => a.saving === "never" || a.saving === "sometimes",
+          q: "What usually gets in the way?",
+          options: [
+            { v: "small", label: "There isn't enough to start with" },
+            { v: "impulse", label: "Impulse buys" },
+            { v: "subs", label: "Small stuff and subscriptions adding up" },
+            { v: "nosystem", label: "No system, I just forget" }
+          ]
+        },
+        {
+          id: "target", type: "text", optional: true,
+          when: a => a.saving === "goal",
+          q: "What are you saving for?",
+          placeholder: "e.g. a ₹20,000 phone by December"
+        },
+        {
+          id: "investing", type: "choice",
+          q: "How far have you got with investing?",
+          options: [
+            { v: "none", label: "Haven't looked into it at all" },
+            { v: "heard", label: "Heard the words, don't get it" },
+            { v: "learning", label: "Reading up on it" },
+            { v: "started", label: "Already invest a bit" }
+          ]
+        },
+        {
+          id: "instruments", type: "multi", optional: true,
+          when: a => a.investing === "started",
+          q: "What have you actually tried?",
+          hint: "Pick any that apply.",
+          options: [
+            { v: "fd", label: "FDs / RDs" },
+            { v: "mf", label: "Mutual funds or SIPs" },
+            { v: "stocks", label: "Stocks" },
+            { v: "gold", label: "Gold" },
+            { v: "crypto", label: "Crypto" }
+          ]
+        },
+        {
+          id: "confidence", type: "scale",
+          q: "How confident do you feel making money decisions?",
+          low: "Not at all", high: "Very confident"
+        },
+        {
+          id: "focus", type: "multi",
+          q: "What would you most like to get better at?",
+          hint: "Pick as many as you like.",
+          options: [
+            { v: "budget", label: "Budgeting" },
+            { v: "saving", label: "Saving consistently" },
+            { v: "spend", label: "Spending less on impulse" },
+            { v: "invest", label: "Investing" },
+            { v: "credit", label: "Credit cards, loans, EMIs" },
+            { v: "tax", label: "Taxes" },
+            { v: "scam", label: "Spotting scams" }
+          ]
+        },
+        {
+          id: "extra", type: "text", optional: true,
+          q: "Anything else MoBo should know?",
+          placeholder: "Optional. Something you're worried about, or working toward."
+        }
+      ];
+
+      const REQUIRED = ["stage", "income", "saving", "investing", "confidence", "focus"];
+
+      const answers = {};
+      let qIdx = 0;
+
+      const quizBody = el("quiz-body");
+      const quizNext = el("quiz-next");
+      const quizBack = el("quiz-back");
+      const quizSkip = el("quiz-skip");
+      const quizFinish = el("quiz-finish");
+      const quizReview = el("quiz-review");
+
+      // Questions whose `when` currently passes. Recomputed as answers change,
+      // which is what makes the run length variable.
+      const activeQuestions = () => QUIZ.filter(q => !q.when || q.when(answers));
+
+      const hasEnough = () => REQUIRED.every(id => {
+        const v = answers[id];
+        return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "";
+      });
+
+      function answered(q) {
+        const v = answers[q.id];
+        if (q.type === "multi") return Array.isArray(v) && v.length > 0;
+        if (q.type === "text") return true; // free text is always skippable
+        return v !== undefined && v !== "";
+      }
+
+      function renderQuiz() {
+        const list = activeQuestions();
+        qIdx = Math.max(0, Math.min(qIdx, list.length - 1));
+        const q = list[qIdx];
+        if (!q) return;
+
+        const done = list.filter(item => {
+          const v = answers[item.id];
+          return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "";
+        }).length;
+
+        el("quiz-fill").style.width = `${Math.round((done / list.length) * 100)}%`;
+        el("quiz-count").textContent = `Question ${qIdx + 1} of ${list.length}`;
+
+        const status = el("quiz-status");
+        if (hasEnough()) {
+          status.textContent = "MoBo has enough to build";
+          status.classList.add("ready");
+        } else {
+          const left = REQUIRED.filter(id => {
+            const v = answers[id];
+            return Array.isArray(v) ? !v.length : v === undefined || v === "";
+          }).length;
+          status.textContent = `${left} more to go`;
+          status.classList.remove("ready");
+        }
+
+        let inner = `<div class="quiz-q">${q.q}</div>`;
+        if (q.hint) inner += `<div class="quiz-hint">${q.hint}</div>`;
+
+        if (q.type === "choice" || q.type === "multi") {
+          const sel = answers[q.id];
+          inner += `<div class="opt-grid${q.type === "multi" ? " multi" : ""}">` +
+            q.options.map(o => {
+              const on = q.type === "multi"
+                ? Array.isArray(sel) && sel.includes(o.v)
+                : sel === o.v;
+              return `<button type="button" class="opt-btn${on ? " selected" : ""}" data-v="${o.v}">
+                        <span class="opt-label">${o.label}</span>
+                        ${q.type === "multi" ? '<span class="opt-check">✓</span>' : ""}
+                      </button>`;
+            }).join("") + `</div>`;
+        } else if (q.type === "scale") {
+          const sel = answers[q.id];
+          inner += `<div class="scale-wrap">
+            <div class="scale-row">` +
+            [1, 2, 3, 4, 5].map(n =>
+              `<button type="button" class="scale-btn${sel === n ? " selected" : ""}" data-v="${n}">${n}</button>`
+            ).join("") + `</div>
+            <div class="scale-ends"><span>${q.low}</span><span>${q.high}</span></div>
+          </div>`;
+        } else if (q.type === "text") {
+          const val = answers[q.id] || "";
+          inner += `<input type="text" class="quiz-text" id="quiz-input"
+                      placeholder="${q.placeholder || ""}" value="${val.replace(/"/g, "&quot;")}" />`;
+        }
+
+        quizBody.innerHTML = inner;
+
+        // wire the inputs
+        quizBody.querySelectorAll(".opt-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (q.type === "multi") {
+              const cur = Array.isArray(answers[q.id]) ? answers[q.id] : [];
+              answers[q.id] = cur.includes(btn.dataset.v)
+                ? cur.filter(x => x !== btn.dataset.v)
+                : cur.concat(btn.dataset.v);
+              renderQuiz();
+            } else {
+              answers[q.id] = btn.dataset.v;
+              // single choice auto-advances, which is what makes it feel rapid
+              renderQuiz();
+              setTimeout(advance, 180);
+            }
+          });
+        });
+
+        quizBody.querySelectorAll(".scale-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            answers[q.id] = Number(btn.dataset.v);
+            renderQuiz();
+            setTimeout(advance, 180);
+          });
+        });
+
+        const textInput = el("quiz-input");
+        if (textInput) {
+          textInput.addEventListener("input", () => { answers[q.id] = textInput.value; updateNav(); });
+          textInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") { e.preventDefault(); advance(); }
+          });
+        }
+
+        updateNav();
+      }
+
+      function updateNav() {
+        const list = activeQuestions();
+        const q = list[qIdx];
+        const last = qIdx >= list.length - 1;
+
+        quizBack.disabled = qIdx === 0;
+        quizSkip.style.display = (q && (q.optional || q.type === "text") && !last) ? "" : "none";
+        quizNext.disabled = !(q && answered(q));
+        quizNext.style.display = last ? "none" : "";
+
+        // As soon as MoBo has enough, the build button appears alongside any
+        // remaining optional questions rather than making the user reach the end.
+        quizFinish.style.display = hasEnough() ? "" : "none";
+        quizReview.style.display = hasEnough() ? "" : "none";
+        if (hasEnough()) el("quiz-summary").textContent = synthesize();
+      }
+
+      function advance() {
+        const list = activeQuestions();
+        if (qIdx < list.length - 1) { qIdx++; renderQuiz(); }
+        else { renderQuiz(); }
+      }
+
+      quizNext.addEventListener("click", advance);
+      quizSkip.addEventListener("click", advance);
+      quizBack.addEventListener("click", () => { if (qIdx > 0) { qIdx--; renderQuiz(); } });
+
+      /* Turn the answers into the same kind of first-person paragraph the
+         textarea would have produced, so downstream code needs no changes. */
+      function synthesize() {
+        const a = answers;
+        const out = [];
+
+        // "a, b and c" reads better than "a, b, c" in a sentence
+        const listify = arr => arr.length < 2
+          ? (arr[0] || "")
+          : arr.slice(0, -1).join(", ") + " and " + arr[arr.length - 1];
+
+        const stage = { school: "I'm still in school", college: "I'm in college", working: "I'm working my first job", other: "I'm between things at the moment" }[a.stage];
+        const income = {
+          pocket: "I get pocket money each month",
+          family: "I ask family for money when I need it",
+          parttime: "I earn from part-time work or freelancing",
+          salary: "I earn a salary",
+          mixed: "my money comes from a mix of sources"
+        }[a.income];
+        const amount = { u1000: "under ₹1,000 a month", "1to5": "about ₹1,000 to ₹5,000 a month", "5to20": "about ₹5,000 to ₹20,000 a month", o20: "more than ₹20,000 a month" }[a.amount];
+
+        let first = [stage, income].filter(Boolean).join(", and ");
+        if (amount) first += `, handling ${amount}`;
+        if (first) out.push(first + ".");
+
+        const saving = {
+          never: "I don't manage to save anything, it's usually gone by the end of the month",
+          sometimes: "I save sometimes, but only when there's money left over",
+          regular: "I put aside a set amount every month",
+          goal: "I'm saving toward something specific"
+        }[a.saving];
+        if (saving) out.push(saving + ".");
+
+        const blocker = {
+          small: "The main problem is there never feels like enough to start saving with.",
+          impulse: "Impulse buying is what usually derails me.",
+          subs: "Small purchases and subscriptions quietly add up on me.",
+          nosystem: "I don't have any system for it, I just forget."
+        }[a.blocker];
+        if (blocker) out.push(blocker);
+
+        if (a.target) out.push(`Specifically I'm saving for ${a.target}.`);
+
+        const investing = {
+          none: "I haven't looked into investing at all",
+          heard: "I've heard investing terms but don't really understand them",
+          learning: "I'm currently reading up on investing",
+          started: "I've already started investing a little"
+        }[a.investing];
+        if (investing) out.push(investing + ".");
+
+        const instrumentNames = { fd: "FDs or RDs", mf: "mutual funds or SIPs", stocks: "stocks", gold: "gold", crypto: "crypto" };
+        if (Array.isArray(a.instruments) && a.instruments.length) {
+          out.push(`So far I've tried ${listify(a.instruments.map(v => instrumentNames[v]))}.`);
+        }
+
+        if (a.confidence) {
+          const words = { 1: "not confident at all", 2: "not very confident", 3: "somewhere in the middle", 4: "fairly confident", 5: "very confident" }[a.confidence];
+          out.push(`On making money decisions I'd rate myself ${a.confidence} out of 5, so ${words}.`);
+        }
+
+        const focusNames = {
+          budget: "budgeting", saving: "saving consistently", spend: "spending less on impulse",
+          invest: "investing", credit: "credit cards, loans and EMIs", tax: "taxes", scam: "spotting scams"
+        };
+        if (Array.isArray(a.focus) && a.focus.length) {
+          out.push(`I most want to get better at ${listify(a.focus.map(v => focusNames[v]))}.`);
+        }
+
+        if (a.extra) out.push(a.extra.trim().replace(/\.?$/, "."));
+
+        return out.join(" ");
+      }
+
+      quizFinish.addEventListener("click", () => {
+        const context = synthesize();
+        if (!context) return;
+        contextBox.value = context; // keep both methods in sync
+        buildRoadmap(context, quizFinish, "Build my roadmap");
+      });
+
+      /* ---- switching between the two context methods ---- */
+      function setMethod(method) {
+        document.querySelectorAll(".method-tab").forEach(t => {
+          const on = t.dataset.method === method;
+          t.classList.toggle("active", on);
+          t.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        el("method-write").style.display = method === "write" ? "" : "none";
+        el("method-quiz").style.display = method === "quiz" ? "" : "none";
+
+        if (method === "quiz") renderQuiz();
+        // Carry quiz answers into the textarea so switching never loses work.
+        if (method === "write" && Object.keys(answers).length && !contextBox.value.trim()) {
+          contextBox.value = synthesize();
+        }
+      }
+
+      document.querySelectorAll(".method-tab").forEach(tab => {
+        tab.addEventListener("click", () => setMethod(tab.dataset.method));
+      });
+
+      el("quiz-edit").addEventListener("click", () => {
+        contextBox.value = synthesize();
+        setMethod("write");
+        contextBox.focus();
+      });
+
+      el("restart-roadmap").addEventListener("click", () => {
+        if (!confirm("Start a new roadmap? Your current progress and XP will be cleared.")) return;
+        ["pqi_roadmap", "pqi_progress", "pqi_xp", "pqi_badges"].forEach(k => localStorage.removeItem(k));
+        activeStep = null;
+        contextBox.value = store.context;
+        showSetup();
+      });
+
+      /* ---- Learning assistant (its own endpoint, separate from Decision) ---- */
+      const moboChat = el("mobo-chat");
+      const moboInput = el("mobo-input");
+      const moboSend = el("mobo-send");
+
+      function appendChat(who, html) {
+        const p = document.createElement("p");
+        p.className = who === "You" ? "chat-user" : "chat-bot";
+        p.innerHTML = `<strong>${who}:</strong> ${html}`;
+        moboChat.appendChild(p);
+        moboChat.scrollTop = moboChat.scrollHeight;
+        return p;
+      }
+
+      async function sendToMobo(msg) {
         if (!msg) return;
-        const user = document.createElement("div");
-        user.className = "user-msg";
-        user.textContent = msg;
-        chatLog.appendChild(user);
+        appendChat("You", msg);
+        moboInput.value = "";
+
+        const loader = document.createElement("p");
+        loader.className = "chat-bot typing";
+        loader.innerHTML = `<strong>MoBo:</strong> <span class="spinner"></span> thinking…`;
+        moboChat.appendChild(loader);
+        moboChat.scrollTop = moboChat.scrollHeight;
+
+        const items = store.roadmap;
+        const topic = (activeStep !== null && items[activeStep]) ? items[activeStep].title : "";
+
+        try {
+          const res = await fetch("/ask_learning", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ message: msg, topic, context: store.context })
+          });
+          const data = await res.json();
+          loader.remove();
+          appendChat("MoBo", marked.parse(data.response || "No response from MoBo."));
+        } catch (e) {
+          console.error("MoBo Assistant Error:", e);
+          loader.remove();
+          appendChat("MoBo", "Couldn't reach the model. Try again in a moment.");
+        }
+      }
+
+      moboSend.addEventListener("click", () => sendToMobo(moboInput.value.trim()));
+      moboInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); sendToMobo(moboInput.value.trim()); }
+      });
+
+      document.querySelectorAll(".mobo-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const items = store.roadmap;
+          const topic = (activeStep !== null && items[activeStep]) ? items[activeStep].title : "what I'm learning";
+          sendToMobo(`${chip.textContent.trim()} (about: ${topic})`);
+        });
+      });
+
+      (function initLearning() {
+        updateStreak();
+
+        const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+        el("setup-tip").textContent = tip;
+        el("workspace-tip").textContent = TIPS[(TIPS.indexOf(tip) + 1) % TIPS.length];
+
+        contextBox.value = store.context;
+
+        if (store.roadmap.length > 0) {
+          showWorkspace();
+          renderRail();
+          renderStats();
+          checkBadges();
+          renderBadges();
+        } else {
+          showSetup();
+        }
+      })();
+
+      /* =====================================================================
+         DECISION MODE
+         ===================================================================== */
+
+      const chatForm = el("chat-form");
+      const chatLog = el("chat-log");
+      const chatInput = el("user-input");
+      const chatEmpty = el("chat-empty");
+
+      // Highlight the final call so it doesn't get lost in the conversation.
+      function verdictClass(text) {
+        const t = text.toLowerCase();
+        if (t.includes("go for it")) return "go";
+        if (t.includes("wait and save") || t.includes("wait & save")) return "wait";
+        if (t.includes("think twice")) return "think";
+        return "";
+      }
+
+      function verdictLabel(kind) {
+        return { go: "Go for it", wait: "Wait and save", think: "Think twice" }[kind] || "";
+      }
+
+      function addMessage(role, html, kind) {
+        if (chatEmpty) chatEmpty.style.display = "none";
+
+        const wrap = document.createElement("div");
+        wrap.className = `msg ${role}`;
+
+        const ava = document.createElement("div");
+        ava.className = "msg-ava";
+        ava.textContent = role === "user" ? "🙂" : "🧠";
+
+        const bubble = document.createElement("div");
+        bubble.className = "msg-bubble" + (kind ? ` verdict ${kind}` : "");
+        bubble.innerHTML = (kind ? `<span class="verdict-tag">${verdictLabel(kind)}</span>` : "") + html;
+
+        wrap.appendChild(ava);
+        wrap.appendChild(bubble);
+        chatLog.appendChild(wrap);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        return bubble;
+      }
+
+      async function sendDecision(msg) {
+        if (!msg) return;
+        addMessage("user", msg.replace(/</g, "&lt;"));
         chatInput.value = "";
-        const bot = document.createElement("div");
-        bot.className = "bot-msg";
-        bot.textContent = "Thinking...";
-        chatLog.appendChild(bot);
+
+        const pending = addMessage("bot", `<span class="spinner"></span> thinking…`);
+
         try {
           const r = await fetch("/ask", {
             method: "POST",
@@ -577,28 +1241,101 @@
             body: new URLSearchParams({ message: msg })
           });
           const d = await r.json();
-          bot.innerHTML = marked.parse(d.response || "(No reply)");
+          const reply = d.response || "(No reply)";
+          const kind = verdictClass(reply);
+
+          pending.innerHTML = (kind ? `<span class="verdict-tag">${verdictLabel(kind)}</span>` : "") +
+            marked.parse(reply);
+          if (kind) pending.className = `msg-bubble verdict ${kind}`;
         } catch {
-          bot.textContent = "Error contacting model.";
+          pending.textContent = "Couldn't reach the model. Try again in a moment.";
         }
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      chatForm.addEventListener("submit", e => {
+        e.preventDefault();
+        sendDecision(chatInput.value.trim());
       });
 
-      // Compare Mode
+      document.querySelectorAll("#decision-chips .starter-chip").forEach(chip => {
+        chip.addEventListener("click", () => sendDecision(chip.textContent.trim()));
+      });
 
-      document.getElementById("compare-btn").addEventListener("click", async () => {
-        const i1 = document.getElementById("item1").value.trim();
-        const i2 = document.getElementById("item2").value.trim();
+      el("reset-decision").addEventListener("click", async () => {
+        try {
+          await fetch("/reset_chat", { method: "POST" });
+        } catch (e) {
+          console.error("Reset failed:", e);
+        }
+        chatLog.querySelectorAll(".msg").forEach(m => m.remove());
+        if (chatEmpty) chatEmpty.style.display = "";
+        toast("Fresh start. Tell MoBo about something else.");
+      });
 
-        const img1 = document.getElementById("img1");
-        const img2 = document.getElementById("img2");
-        const out = document.getElementById("compare-output");
+      /* =====================================================================
+         COMPARE MODE
+         ===================================================================== */
+
+      const cmpBtn = el("compare-btn");
+      const cmpStatus = el("compare-status");
+      const cmpOut = el("compare-output");
+      const in1 = el("item1");
+      const in2 = el("item2");
+
+      function setMedia(imgEl, phEl, url) {
+        if (url && url.startsWith("http")) {
+          imgEl.src = url;
+          imgEl.classList.add("loaded");
+          phEl.style.display = "none";
+        } else {
+          imgEl.removeAttribute("src");
+          imgEl.classList.remove("loaded");
+          phEl.style.display = "";
+          phEl.textContent = "No image found for this one";
+        }
+      }
+
+      function setMeta(id, data, inr) {
+        el(id).innerHTML = `
+          <strong>${data.title || "Unknown product"}</strong>
+          <span class="cmp-price">${data.price || "Price unavailable"}</span>
+          ${inr ? `<span class="cmp-source"> · about ₹${Math.round(inr).toLocaleString("en-IN")}</span>` : ""}
+          ${data.source ? `<div class="cmp-source">from ${data.source}</div>` : ""}`;
+      }
+
+      document.querySelectorAll(".preset-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          in1.value = btn.dataset.a;
+          in2.value = btn.dataset.b;
+          cmpBtn.click();
+        });
+      });
+
+      el("swap-items").addEventListener("click", () => {
+        const tmp = in1.value;
+        in1.value = in2.value;
+        in2.value = tmp;
+      });
+
+      cmpBtn.addEventListener("click", async () => {
+        const i1 = in1.value.trim();
+        const i2 = in2.value.trim();
 
         if (!i1 || !i2) {
-          out.textContent = "Please enter both items.";
+          [in1, in2].forEach(f => {
+            if (!f.value.trim()) {
+              f.classList.add("shake");
+              setTimeout(() => f.classList.remove("shake"), 500);
+            }
+          });
           return;
         }
 
-        out.textContent = "Fetching products... (wait a few seconds)";
+        cmpBtn.disabled = true;
+        cmpBtn.innerHTML = `<span class="spinner"></span> Checking prices…`;
+        cmpStatus.textContent = "This takes a few seconds.";
+        cmpOut.innerHTML = "";
 
         try {
           const r = await fetch("/compare_items", {
@@ -606,298 +1343,66 @@
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({ item1: i1, item2: i2 })
           });
-
           const d = await r.json();
-          console.log("DEBUG:", d); // helpful
 
           if (d.error) {
-            out.textContent = d.error;
+            cmpOut.innerHTML = `<div class="cmp-error">${d.error}</div>`;
             return;
           }
 
-          function setImage(imgElement, url, query) {
-            if (url && url.startsWith("http")) {
-              imgElement.src = url;
-            } else {
-              imgElement.src = `https://source.unsplash.com/400x300/?${query}`;
-            }
-          }
+          setMedia(el("img1"), el("ph1"), d.item1.image);
+          setMedia(el("img2"), el("ph2"), d.item2.image);
+          setMeta("meta1", d.item1, d.price1_inr);
+          setMeta("meta2", d.item2, d.price2_inr);
 
-          setImage(img1, d.item1.image, i1);
-          setImage(img2, d.item2.image, i2);
+          const p1 = d.price1_inr;
+          const p2 = d.price2_inr;
+          const max = Math.max(p1 || 0, p2 || 0) || 1;
 
-          // ✅ CORE FEATURE (always shows)
-          let ratioText = "";
+          let hero;
           if (d.ratio && d.ratio > 0) {
-            ratioText = `⚖️ You can buy <strong>${d.ratio}</strong> of <strong>${i2}</strong> for the price of one <strong>${i1}</strong>.`;
+            hero = `
+              <div class="ratio-num">${d.ratio}×</div>
+              <p class="ratio-text">One <b>${i1}</b> costs about the same as
+                <b>${d.ratio}</b> of <b>${i2}</b>.</p>`;
           } else {
-            ratioText = "⚠️ Couldn't compute comparison.";
+            hero = `<p class="ratio-text">Couldn't work out a clean ratio for these two.
+              Try more specific model names.</p>`;
           }
 
-          out.innerHTML = `
-      <div style="margin-bottom:12px;">
-        <strong>${d.item1.title}</strong><br>
-        💰 ${d.item1.price}
-        ${d.price1_inr ? `(≈ ₹${Math.round(d.price1_inr).toLocaleString()})` : ""}
-      </div>
+          const bar = (label, val, alt) => `
+            <div class="bar-row">
+              <div class="bar-top">
+                <strong>${label}</strong>
+                <span>${val ? "₹" + Math.round(val).toLocaleString("en-IN") : "no price"}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill ${alt ? "alt" : ""}" style="width:${val ? (val / max) * 100 : 0}%"></div>
+              </div>
+            </div>`;
 
-      <div style="margin-bottom:12px;">
-        <strong>${d.item2.title}</strong><br>
-        💰 ${d.item2.price}
-        ${d.price2_inr ? `(≈ ₹${Math.round(d.price2_inr).toLocaleString()})` : ""}
-      </div>
+          const diff = (p1 && p2) ? Math.abs(p1 - p2) : null;
 
-      <div style="margin-top:16px; font-size:1.1rem;">
-        ${ratioText}
-      </div>
-    `;
-
+          cmpOut.innerHTML = `
+            <div class="cmp-result">
+              <div class="ratio-hero">${hero}</div>
+              ${bar(i1, p1, false)}
+              ${bar(i2, p2, true)}
+              ${diff ? `<div class="cmp-note">The gap is about
+                <b>₹${Math.round(diff).toLocaleString("en-IN")}</b>. That's money you'd keep by
+                going with the cheaper one, worth asking what else it could cover.</div>` : ""}
+              ${d.note ? `<div class="cmp-note">${d.note}</div>` : ""}
+            </div>`;
         } catch (err) {
           console.error(err);
-          out.textContent = "Error fetching comparison.";
-        }
-      });
-
-      // Learning Mode
-      const contextBox = document.getElementById("user-context");
-      const genBtn = document.getElementById("generate-roadmap");
-      const road = document.getElementById("roadmap");
-      const track = document.getElementById("track");
-
-      genBtn.addEventListener("click", async () => {
-        const context = contextBox.value.trim();
-        localStorage.setItem("user_context", context);
-        if (!context) return alert("Please describe your financial background first!");
-        genBtn.disabled = true;
-        genBtn.textContent = "Generating roadmap...";
-
-        try {
-          const context = localStorage.getItem("user_context") || "";
-          const res = await fetch("/generate_roadmap", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              context: context
-            })
-          });
-
-          // 🧠 Parse JSON safely
-          const data = await res.json();
-          let roadmap = data.roadmap;
-
-          // Fix if backend sent a string instead of array
-          if (typeof roadmap === "string") {
-            try {
-              roadmap = JSON.parse(roadmap);
-            } catch {
-              roadmap = [];
-            }
-          }
-
-          if (!Array.isArray(roadmap) || roadmap.length === 0) {
-            roadmap = [
-              { title: "Budgeting Basics", summary: "Learn how to plan and track where your money goes each month." },
-              { title: "Saving Goals", summary: "Understand how to set achievable short- and long-term financial goals." },
-              { title: "Smart Spending", summary: "Recognize needs vs wants and develop mindful spending habits." },
-              { title: "Intro to Investing", summary: "Discover the power of compounding and basic investment concepts." },
-              { title: "Credit & Taxes", summary: "Learn how credit works and why taxes are an essential life skill." },
-            ];
-          }
-
-          // ✅ Save roadmap locally
-          localStorage.setItem("pqi_roadmap", JSON.stringify(roadmap));
-          localStorage.setItem("pqi_progress", "0");
-
-          renderRoadmap(roadmap);
-          road.scrollIntoView({ behavior: "smooth" });
-        } catch (e) {
-          console.error("❌ Roadmap generation error:", e);
-          alert("Error generating roadmap. Try again later.");
+          cmpOut.innerHTML = `<div class="cmp-error">Something went wrong fetching prices. Try again in a moment.</div>`;
         } finally {
-          genBtn.disabled = false;
-          genBtn.textContent = "Generate Personalized Roadmap";
+          cmpBtn.disabled = false;
+          cmpBtn.textContent = "Compare prices";
+          cmpStatus.textContent = "";
         }
-      });
-
-
-      function renderRoadmap(items) {
-        road.style.display = "block";
-        track.innerHTML = "";
-
-        // Make roadmap horizontally centered and neat
-        track.style.display = "flex";
-        track.style.justifyContent = "center";
-        track.style.alignItems = "center";
-        track.style.gap = "60px";
-        track.style.overflowX = "auto";
-        track.style.scrollBehavior = "smooth";
-        track.style.padding = "2rem 0";
-        track.style.whiteSpace = "nowrap";
-
-        const progress = Number(localStorage.getItem("pqi_progress") || "0");
-
-        items.forEach((it, i) => {
-          const step = document.createElement("div");
-          step.className = "step";
-          if (i < progress) step.classList.add("completed");
-          if (i > progress) step.classList.add("locked");
-
-          step.innerHTML = `
-      <h4>${i + 1}. ${it.title}</h4>
-      <p>${it.summary}</p>
-    `;
-
-          if (i === progress || i < progress) {
-            step.addEventListener("click", () => openArticle(i, it));
-          }
-
-          track.appendChild(step);
-
-
-
-          if (i < items.length - 1) {
-            const connector = document.createElement("div");
-            connector.className = "connector";
-
-            const progress = Number(localStorage.getItem("pqi_progress") || "0");
-            let arrowColor = "#cfcfcf"; // locked
-            if (i < progress) arrowColor = "#16c2a1"; // completed
-            if (i === progress) arrowColor = "#2d248a"; // current
-
-
-            connector.innerHTML = `
-  <svg width="90" height="30" viewBox="0 0 90 30">
-    <polygon 
-      points="0,12 60,12 60,6 90,15 60,24 60,18 0,18"
-      fill="${arrowColor}"
-    />
-  </svg>
-`;
-
-
-
-
-            track.appendChild(connector);
-          }
-        });
-
-        // Always show scroll bar
-        track.style.overflowX = "scroll";
-        track.style.scrollbarWidth = "thin";
-        track.style.scrollbarColor = "#2d248a #eee";
-      }
-
-      // --- Inline article rendering with proper parsing ---
-      async function openArticle(i, item) {
-        const progress = Number(localStorage.getItem("pqi_progress") || "0");
-        const items = JSON.parse(localStorage.getItem("pqi_roadmap") || "[]");
-        const userContext = localStorage.getItem("user_context") || "";
-        const title = item.title;
-        const summary = item.summary || "";
-
-        let articleBox = document.getElementById("article-box");
-        if (!articleBox) {
-          articleBox = document.createElement("div");
-          articleBox.id = "article-box";
-          articleBox.style.background = "#fff";
-          articleBox.style.border = "1px solid #ddd";
-          articleBox.style.borderRadius = "16px";
-          articleBox.style.padding = "24px";
-          articleBox.style.margin = "40px auto";
-          articleBox.style.maxWidth = "800px";
-          articleBox.style.boxShadow = "0 6px 18px rgba(0,0,0,0.1)";
-          articleBox.style.textAlign = "left";
-          articleBox.style.lineHeight = "1.6";
-          articleBox.style.transition = "opacity 0.3s ease-in-out";
-          road.parentNode.insertBefore(articleBox, road.nextSibling);
-        }
-
-        articleBox.innerHTML = `<h3 style="color:#2d248a;">${title}</h3><p>Loading...</p>`;
-
-        try {
-          const res = await fetch("/generate_article", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              topic: title,
-              context: userContext,
-              summary: summary
-            })
-          });
-
-          const data = await res.json();
-
-          // Handle malformed or missing response
-          if (!data || !data.article) {
-            throw new Error("Invalid response from server");
-          }
-
-          const parsedArticle = marked.parse(data.article);
-          articleBox.innerHTML = `
-      <h3 style="color:#2d248a;">${title}</h3>
-      <div>${parsedArticle}</div>
-      <button id="close-article" class="btn" style="margin-top:20px;">Close</button>
-    `;
-
-          document.getElementById("close-article").onclick = () => {
-            articleBox.remove();
-          };
-
-          // Unlock next step after reading
-          if (i === progress) {
-            localStorage.setItem("pqi_progress", String(progress + 1));
-            renderRoadmap(items);
-          }
-        } catch (e) {
-          console.error("Article load error:", e);
-          articleBox.innerHTML = `<p style="color:red;">⚠️ Could not load article. Try again later.</p>`;
-        }
-      }
-
-
-      // --- MoBo Assistant Chat (Refined Markdown + Scrollable + Error-handled) ---
-      const moboChat = document.getElementById("mobo-chat");
-      const moboInput = document.getElementById("mobo-input");
-      const moboSend = document.getElementById("mobo-send");
-
-      moboSend.addEventListener("click", async () => {
-        const msg = moboInput.value.trim();
-        if (!msg) return;
-
-        // Display user message
-        moboChat.innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
-        moboInput.value = "";
-        moboChat.scrollTop = moboChat.scrollHeight;
-
-        // Display typing indicator
-        const loader = document.createElement("p");
-        loader.textContent = "MoBo is thinking...";
-        loader.style.opacity = "0.7";
-        moboChat.appendChild(loader);
-        moboChat.scrollTop = moboChat.scrollHeight;
-
-        try {
-          const res = await fetch("/ask", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ message: msg })
-          });
-
-          const data = await res.json();
-          loader.remove();
-
-          const reply = marked.parse(data.response || "⚠️ No response from MoBo.");
-          moboChat.innerHTML += `<p><strong>MoBo:</strong> ${reply}</p>`;
-        } catch (e) {
-          console.error("MoBo Assistant Error:", e);
-          loader.remove();
-          moboChat.innerHTML += `<p><strong>MoBo:</strong> ⚠️ Error contacting model. Try again later.</p>`;
-        }
-
-        moboChat.scrollTop = moboChat.scrollHeight;
       });
     });
-
   </script>
 </body>
 

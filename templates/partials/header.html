@@ -1,0 +1,21 @@
+<header class="global-banner">
+  <a class="banner-left" href="/">
+    <img src="/static/logo.svg" alt="" class="logo" />
+    <span class="brand-name">PocketIQ</span>
+  </a>
+
+  <nav class="banner-nav" aria-label="Primary">
+    <a href="/mobo/learning" class="nav-link {% if '/mobo/learning' in request.path %}active{% endif %}">Learn</a>
+    <a href="/mobo/decision" class="nav-link {% if '/mobo/decision' in request.path %}active{% endif %}">Decide</a>
+    <a href="/mobo/compare" class="nav-link {% if '/mobo/compare' in request.path %}active{% endif %}">Compare</a>
+    <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
+  </nav>
+
+  <div class="banner-right">
+    {% if request.path == "/" %}
+    <a href="/mobo/learning" class="pq-btn sm">Open MoBo</a>
+    {% else %}
+    <a href="/" class="pq-btn sm ghost">Home</a>
+    {% endif %}
+  </div>
+</header>

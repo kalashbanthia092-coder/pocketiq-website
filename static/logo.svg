@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" role="img" aria-label="PocketIQ">
+  <defs>
+    <linearGradient id="pqGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B2FA8"/>
+      <stop offset="55%" stop-color="#2D248A"/>
+      <stop offset="100%" stop-color="#16C2A1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="44" height="44" rx="13" fill="url(#pqGrad)"/>
+
+  <!-- upward trend line -->
+  <path d="M11 29.5 L18.5 22 L23.5 27 L32 17.5"
+        fill="none" stroke="#fff" stroke-width="2.9"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.96"/>
+
+  <!-- coin at the peak -->
+  <circle cx="32" cy="17.5" r="3.6" fill="#fff"/>
+  <circle cx="32" cy="17.5" r="1.5" fill="#2D248A" opacity="0.9"/>
+
+  <!-- baseline -->
+  <path d="M11 34 H33" stroke="#fff" stroke-width="2.1"
+        stroke-linecap="round" opacity="0.35"/>
+</svg>
